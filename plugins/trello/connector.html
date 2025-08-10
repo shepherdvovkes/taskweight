@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskWeight Power-Up</title>
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .power-up-container { padding: 16px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h2 { margin: 0; color: #172b4d; }
+        .header p { margin: 5px 0; color: #6b778c; font-size: 14px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #172b4d; }
+        .form-group input, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #dfe1e6; border-radius: 3px; font-size: 14px; }
+        .form-group textarea { height: 80px; resize: vertical; }
+        .btn { padding: 8px 16px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-primary { background: #0079bf; color: white; }
+        .btn-primary:hover { background: #026aa7; }
+        .btn-secondary { background: #f4f5f7; color: #172b4d; margin-left: 8px; }
+        .btn-secondary:hover { background: #ebecf0; }
+        .hidden { display: none; }
+        .status-badge { padding: 8px 12px; border-radius: 3px; margin: 10px 0; text-align: center; }
+        .status-processing { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .status-estimated { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .estimate-details { margin-top: 16px; padding: 16px; background: #f8f9fa; border-radius: 3px; }
+        .estimate-details h4 { margin: 0 0 10px 0; color: #172b4d; }
+        .estimate-details p { margin: 5px 0; color: #6b778c; }
+        .error-message { padding: 12px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 3px; margin: 16px 0; }
+        .loading { text-align: center; padding: 20px; }
+        .spinner { border: 2px solid #f3f3f3; border-top: 2px solid #0079bf; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <script>
+        // TaskWeight Power-Up конфигурация
+        window.TrelloPowerUp.initialize({
+            // Кнопка на карточке
+            'card-buttons': function(t, options) {
+                return [{
+                    text: '🎯 Оценить задачу',
+                    callback: function(t) {
+                        return t.modal({
+                            title: 'TaskWeight - AI Оценка задачи',
+                            url: './index.html',
+                            height: 600,
+                            callback: function(result) {
+                                if (result && result.success) {
+                                    t.arg('callback')(result);
+                                }
+                            }
+                        });
+                    }
+                }];
+            },
+            
+            // Бейджи на карточке
+            'card-badges': function(t, options) {
+                return t.get('card', 'shared', 'taskweight_estimation')
+                    .then(function(estimation) {
+                        if (estimation && estimation.status === 'estimated') {
+                            return [{
+                                text: `⏱️ ${estimation.estimatedHours}ч`,
+                                icon: 'https://cdn.glitch.global/your-icon-dark.png',
+                                color: 'green'
+                            }];
+                        } else if (estimation && estimation.status === 'processing') {
+                            return [{
+                                text: '⏳ Оценка...',
+                                icon: 'https://cdn.glitch.global/your-icon-dark.png',
+                                color: 'yellow'
+                            }];
+                        } else if (estimation && estimation.status === 'completed') {
+                            return [{
+                                text: `✅ ${estimation.actualHours}ч`,
+                                icon: 'https://cdn.glitch.global/your-icon-dark.png',
+                                color: 'blue'
+                            }];
+                        }
+                        return [];
+                    });
+            },
+            
+            // Детальные бейджи в карточке
+            'card-detail-badges': function(t, options) {
+                return t.get('card', 'shared', 'taskweight_estimation')
+                    .then(function(estimation) {
+                        if (estimation) {
+                            const badges = [];
+                            
+                            if (estimation.status === 'estimated') {
+                                badges.push({
+                                    title: 'TaskWeight Прогноз',
+                                    text: `⏱️ ${estimation.estimatedHours} часов`,
+                                    icon: 'https://cdn.glitch.global/your-icon-dark.png',
+                                    color: 'green'
+                                });
+                            } else if (estimation.status === 'processing') {
+                                badges.push({
+                                    title: 'TaskWeight',
+                                    text: '⏳ Оценка выполняется...',
+                                    icon: 'https://cdn.glitch.global/your-icon-dark.png',
+                                    color: 'yellow'
+                                });
+                            } else if (estimation.status === 'completed') {
+                                badges.push({
+                                    title: 'TaskWeight Результат',
+                                    text: `✅ ${estimation.actualHours}ч (прогноз: ${estimation.estimatedHours}ч)`,
+                                    icon: 'https://cdn.glitch.global/your-icon-dark.png',
+                                    color: 'blue'
+                                });
+                            }
+                            
+                            return badges;
+                        }
+                        return [];
+                    });
+            },
+            
+            // Настройки Power-Up
+            'show-settings': function(t, options) {
+                return t.modal({
+                    title: 'TaskWeight Настройки',
+                    url: './settings.html',
+                    height: 400
+                });
+            },
+            
+            // Callback для обновления данных
+            'callback': function(t, options) {
+                // Обновляем бейджи после изменений
+                t.arg('callback')({ success: true });
+            }
+        });
+    </script>
+</body>
+</html>

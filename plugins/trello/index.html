@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskWeight - Trello Power-Up</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="power-up-container">
+            <div class="header">
+                <h2>🎯 TaskWeight</h2>
+                <p>AI-оценка сложности задач с использованием OpenAI GPT</p>
+                
+                <!-- Индикатор статуса API -->
+                <div id="connection-status" class="connection-status">
+                    <span>🔍 Проверка подключения...</span>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <!-- Форма оценки -->
+                <div id="estimation-form" class="estimation-form">
+                    <h3>Оценить задачу</h3>
+                    
+                    <div class="form-group">
+                        <label for="repo-url">
+                            <span class="required">*</span> GitHub репозиторий:
+                        </label>
+                        <input type="url" id="repo-url" placeholder="https://github.com/user/repo" required>
+                        <small class="help-text">Укажите ссылку на репозиторий для анализа кода</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="task-description">
+                            <span class="required">*</span> Описание задачи:
+                        </label>
+                        <textarea id="task-description" placeholder="Опишите задачу подробно..." required></textarea>
+                        <small class="help-text">Чем детальнее описание, тем точнее будет оценка</small>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="priority">Приоритет задачи:</label>
+                            <select id="priority">
+                                <option value="low">Низкий</option>
+                                <option value="medium" selected>Средний</option>
+                                <option value="high">Высокий</option>
+                                <option value="urgent">Срочный</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="complexity">Ожидаемая сложность:</label>
+                            <select id="complexity">
+                                <option value="simple">Простая</option>
+                                <option value="medium" selected>Средняя</option>
+                                <option value="complex">Сложная</option>
+                                <option value="very-complex">Очень сложная</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button id="estimate-btn" class="btn btn-primary">
+                            <span class="btn-text">🎯 Оценить задачу</span>
+                            <span class="btn-loading hidden">
+                                <div class="spinner"></div>
+                                Оценка...
+                            </span>
+                        </button>
+                        <button id="cancel-btn" class="btn btn-secondary">Отмена</button>
+                    </div>
+                    
+                    <!-- Информация о автосохранении -->
+                    <div class="auto-save-info">
+                        <small>💾 Форма автоматически сохраняется при изменении полей</small>
+                    </div>
+                </div>
+                
+                <!-- Результат оценки -->
+                <div id="estimation-result" class="estimation-result hidden">
+                    <h3>Результат оценки</h3>
+                    
+                    <div class="result-content">
+                        <div class="status-badge" id="status-badge">
+                            <span class="status-text">Оценка...</span>
+                        </div>
+                        
+                        <div class="estimate-details" id="estimate-details">
+                            <!-- Детали оценки будут добавлены динамически -->
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button id="save-estimation" class="btn btn-primary">💾 Сохранить оценку</button>
+                            <button id="export-estimation" class="btn btn-secondary">📤 Экспорт</button>
+                            <button id="new-estimation" class="btn btn-secondary">🔄 Новая оценка</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Сообщения об ошибках -->
+                <div id="error-message" class="error-message hidden">
+                    <p id="error-text"></p>
+                </div>
+                
+                <!-- Информационная панель -->
+                <div class="info-panel">
+                    <h4>ℹ️ Как это работает?</h4>
+                    <ul>
+                        <li>AI анализирует описание задачи и структуру репозитория</li>
+                        <li>Учитывает сложность, приоритет и контекст проекта</li>
+                        <li>Предоставляет оценку времени в часах</li>
+                        <li>Учится на основе реальных результатов выполнения</li>
+                    </ul>
+                    
+                    <div class="features-list">
+                        <h5>🚀 Возможности:</h5>
+                        <ul>
+                            <li>Автосохранение формы</li>
+                            <li>Экспорт результатов</li>
+                            <li>Уведомления о завершении</li>
+                            <li>Детальная аналитика</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

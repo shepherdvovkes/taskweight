@@ -1,0 +1,24 @@
+{
+  "name": "TaskWeight",
+  "details": "AI-powered task estimation system that automatically estimates task complexity and time using OpenAI GPT",
+  "icon": {
+    "url": "https://cdn.glitch.global/your-icon-dark.png"
+  },
+  "author": "TaskWeight Team",
+  "capabilities": [
+    "callback",
+    "card-badges",
+    "card-buttons",
+    "card-detail-badges",
+    "show-settings"
+  ],
+  "connectors": {
+    "iframe": {
+      "url": "./connector.html"
+    }
+  },
+  "permissions": [
+    "read",
+    "write"
+  ]
+}

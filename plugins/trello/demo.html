@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskWeight Demo - Тестирование плагина</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Дополнительные стили для демо */
+        .demo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .demo-header h1 {
+            margin: 0 0 16px 0;
+            font-size: 36px;
+            font-weight: 700;
+        }
+        
+        .demo-header p {
+            margin: 0;
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .demo-controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+        
+        .demo-controls button {
+            margin: 0 8px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .demo-controls .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .demo-controls .btn-success:hover {
+            background: #218838;
+        }
+        
+        .demo-controls .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .demo-controls .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .demo-controls .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .demo-controls .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .demo-info {
+            background: #e3f2fd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #bbdefb;
+        }
+        
+        .demo-info h3 {
+            margin: 0 0 12px 0;
+            color: #1565c0;
+        }
+        
+        .demo-info ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #1976d2;
+        }
+        
+        .demo-info li {
+            margin-bottom: 8px;
+        }
+        
+        .mock-trello {
+            background: #f4f5f7;
+            border: 2px solid #dfe1e6;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .mock-trello-header {
+            background: #0079bf;
+            color: white;
+            padding: 16px;
+            font-weight: 600;
+        }
+        
+        .mock-trello-content {
+            padding: 20px;
+        }
+        
+        .mock-card {
+            background: white;
+            border: 1px solid #dfe1e6;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mock-card h4 {
+            margin: 0 0 8px 0;
+            color: #172b4d;
+        }
+        
+        .mock-card p {
+            margin: 0 0 12px 0;
+            color: #6b778c;
+            font-size: 14px;
+        }
+        
+        .mock-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .mock-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .mock-badge.estimated {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .mock-badge.processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .mock-badge.completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .demo-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #dfe1e6;
+            border-radius: 6px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 250px;
+            z-index: 1000;
+        }
+        
+        .demo-status h4 {
+            margin: 0 0 12px 0;
+            color: #172b4d;
+            font-size: 14px;
+        }
+        
+        .demo-status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        
+        .demo-status-item .label {
+            color: #6b778c;
+        }
+        
+        .demo-status-item .value {
+            color: #172b4d;
+            font-weight: 500;
+        }
+        
+        .demo-status-item .status-ok {
+            color: #28a745;
+        }
+        
+        .demo-status-item .status-error {
+            color: #dc3545;
+        }
+        
+        .demo-status-item .status-warning {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Демо заголовок -->
+        <div class="demo-header">
+            <h1>🎯 TaskWeight Demo</h1>
+            <p>Демонстрация функциональности плагина для Trello</p>
+        </div>
+        
+        <!-- Демо контролы -->
+        <div class="demo-controls">
+            <button class="btn btn-success" onclick="simulateSuccess()">✅ Симуляция успеха</button>
+            <button class="btn btn-warning" onclick="simulateProcessing()">⏳ Симуляция обработки</button>
+            <button class="btn btn-danger" onclick="simulateError()">❌ Симуляция ошибки</button>
+            <button class="btn btn-secondary" onclick="resetDemo()">🔄 Сброс</button>
+        </div>
+        
+        <!-- Информация о демо -->
+        <div class="demo-info">
+            <h3>ℹ️ О демо-режиме</h3>
+            <ul>
+                <li>Эта страница позволяет протестировать функциональность плагина без интеграции с Trello</li>
+                <li>Используйте кнопки выше для симуляции различных сценариев</li>
+                <li>Все данные сохраняются локально в браузере</li>
+                <li>Можно протестировать API интеграцию с реальным сервером</li>
+            </ul>
+        </div>
+        
+        <!-- Мок Trello -->
+        <div class="mock-trello">
+            <div class="mock-trello-header">
+                📋 Доска: TaskWeight Demo
+            </div>
+            <div class="mock-trello-content">
+                <div class="mock-card">
+                    <h4>🎯 Создать API для оценки задач</h4>
+                    <p>Разработать REST API для интеграции с AI-сервисом оценки сложности задач</p>
+                    <div class="mock-badges" id="card-badges-1">
+                        <span class="mock-badge estimated">⏱️ 8ч</span>
+                    </div>
+                </div>
+                
+                <div class="mock-card">
+                    <h4>🔌 Интеграция с Trello</h4>
+                    <p>Создать Power-Up для автоматической оценки карточек в Trello</p>
+                    <div class="mock-badges" id="card-badges-2">
+                        <span class="mock-badge processing">⏳ Оценка...</span>
+                    </div>
+                </div>
+                
+                <div class="mock-card">
+                    <h4>📊 Аналитика и отчеты</h4>
+                    <p>Реализовать систему аналитики для отслеживания точности оценок</p>
+                    <div class="mock-badges" id="card-badges-3">
+                        <span class="mock-badge completed">✅ 12ч (прогноз: 10ч)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Основной контент плагина -->
+        <div class="power-up-container">
+            <div class="main-content">
+                <!-- Форма оценки -->
+                <div id="estimation-form" class="estimation-form">
+                    <h3>Оценить задачу</h3>
+                    
+                    <div class="form-group">
+                        <label for="repo-url">
+                            <span class="required">*</span> GitHub репозиторий:
+                        </label>
+                        <input type="url" id="repo-url" placeholder="https://github.com/user/repo" required>
+                        <small class="help-text">Укажите ссылку на репозиторий для анализа кода</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="task-description">
+                            <span class="required">*</span> Описание задачи:
+                        </label>
+                        <textarea id="task-description" placeholder="Опишите задачу подробно..." required></textarea>
+                        <small class="help-text">Чем детальнее описание, тем точнее будет оценка</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priority">Приоритет задачи:</label>
+                        <select id="priority">
+                            <option value="low">Низкий</option>
+                            <option value="medium" selected>Средний</option>
+                            <option value="high">Высокий</option>
+                            <option value="urgent">Срочный</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="complexity">Ожидаемая сложность:</label>
+                        <select id="complexity">
+                            <option value="simple">Простая</option>
+                            <option value="medium" selected>Средняя</option>
+                            <option value="complex">Сложная</option>
+                            <option value="very-complex">Очень сложная</option>
+                        </select>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button id="estimate-btn" class="btn btn-primary">
+                            <span class="btn-text">🎯 Оценить задачу</span>
+                            <span class="btn-loading hidden">
+                                <div class="spinner"></div>
+                                Оценка...
+                            </span>
+                        </button>
+                        <button id="cancel-btn" class="btn btn-secondary">Отмена</button>
+                    </div>
+                </div>
+                
+                <!-- Результат оценки -->
+                <div id="estimation-result" class="estimation-result hidden">
+                    <h3>Результат оценки</h3>
+                    
+                    <div class="result-content">
+                        <div class="status-badge" id="status-badge">
+                            <span class="status-text">Оценка...</span>
+                        </div>
+                        
+                        <div class="estimate-details" id="estimate-details">
+                            <!-- Детали оценки будут добавлены динамически -->
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button id="save-estimation" class="btn btn-primary">💾 Сохранить оценку</button>
+                            <button id="new-estimation" class="btn btn-secondary">🔄 Новая оценка</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Сообщения об ошибках -->
+                <div id="error-message" class="error-message hidden">
+                    <p id="error-text"></p>
+                </div>
+                
+                <!-- Информационная панель -->
+                <div class="info-panel">
+                    <h4>ℹ️ Как это работает?</h4>
+                    <ul>
+                        <li>AI анализирует описание задачи и структуру репозитория</li>
+                        <li>Учитывает сложность, приоритет и контекст проекта</li>
+                        <li>Предоставляет оценку времени в часах</li>
+                        <li>Учится на основе реальных результатов выполнения</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Статус демо -->
+    <div class="demo-status" id="demo-status">
+        <h4>📊 Статус демо</h4>
+        <div class="demo-status-item">
+            <span class="label">Режим:</span>
+            <span class="value status-ok">Демо</span>
+        </div>
+        <div class="demo-status-item">
+            <span class="label">API:</span>
+            <span class="value status-warning">Локальный</span>
+        </div>
+        <div class="demo-status-item">
+            <span class="label">Статус:</span>
+            <span class="value status-ok">Готов</span>
+        </div>
+    </div>
+    
+    <script>
+        // Демо-версия TaskWeight без Trello интеграции
+        class TaskWeightDemo {
+            constructor() {
+                this.apiUrl = 'http://localhost:8000';
+                this.estimationData = null;
+                this.demoMode = true;
+                
+                this.init();
+            }
+            
+            init() {
+                this.initEventHandlers();
+                this.loadDemoData();
+                this.updateDemoStatus();
+            }
+            
+            initEventHandlers() {
+                // Кнопка оценки
+                const estimateBtn = document.getElementById('estimate-btn');
+                if (estimateBtn) {
+                    estimateBtn.addEventListener('click', () => this.estimateTask());
+                }
+                
+                // Кнопка отмены
+                const cancelBtn = document.getElementById('cancel-btn');
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', () => this.resetForm());
+                }
+                
+                // Кнопка сохранения оценки
+                const saveBtn = document.getElementById('save-estimation');
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', () => this.saveEstimation());
+                }
+                
+                // Кнопка новой оценки
+                const newBtn = document.getElementById('new-estimation');
+                if (newBtn) {
+                    newBtn.addEventListener('click', () => this.resetForm());
+                }
+                
+                // Валидация формы
+                this.initFormValidation();
+            }
+            
+            initFormValidation() {
+                const repoUrlInput = document.getElementById('repo-url');
+                const taskDescriptionInput = document.getElementById('task-description');
+                
+                if (repoUrlInput && taskDescriptionInput) {
+                    [repoUrlInput, taskDescriptionInput].forEach(input => {
+                        input.addEventListener('input', () => this.validateForm());
+                        input.addEventListener('blur', () => this.validateForm());
+                    });
+                }
+            }
+            
+            validateForm() {
+                const repoUrl = document.getElementById('repo-url')?.value;
+                const taskDescription = document.getElementById('task-description')?.value;
+                const estimateBtn = document.getElementById('estimate-btn');
+                
+                if (estimateBtn) {
+                    const isValid = repoUrl && taskDescription && this.isValidGitHubUrl(repoUrl);
+                    estimateBtn.disabled = !isValid;
+                    
+                    if (!isValid) {
+                        estimateBtn.classList.add('btn-disabled');
+                    } else {
+                        estimateBtn.classList.remove('btn-disabled');
+                    }
+                }
+            }
+            
+            isValidGitHubUrl(url) {
+                try {
+                    const urlObj = new URL(url);
+                    return urlObj.hostname === 'github.com' && urlObj.pathname.split('/').length >= 3;
+                } catch {
+                    return false;
+                }
+            }
+            
+            async estimateTask() {
+                try {
+                    const formData = this.getFormData();
+                    if (!formData) return;
+                    
+                    this.showLoadingState();
+                    
+                    // В демо-режиме симулируем API вызов
+                    if (this.demoMode) {
+                        await this.simulateEstimation(formData);
+                    } else {
+                        const response = await this.sendEstimationRequest(formData);
+                        if (response.status === 'processing') {
+                            this.pollEstimationStatus(response.cardId);
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.error('Ошибка оценки:', error);
+                    this.showError('Ошибка при оценке задачи: ' + error.message);
+                    this.hideLoadingState();
+                }
+            }
+            
+            async simulateEstimation(formData) {
+                // Симуляция процесса оценки
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Генерируем случайную оценку
+                const estimatedHours = Math.floor(Math.random() * 20) + 2;
+                const confidence = Math.floor(Math.random() * 30) + 70;
+                
+                this.estimationData = {
+                    id: 'demo_' + Date.now(),
+                    cardId: 'demo_card',
+                    status: 'estimated',
+                    estimatedHours: estimatedHours,
+                    confidence: confidence,
+                    taskDescription: formData.taskDescription,
+                    repoUrl: formData.repoUrl,
+                    priority: formData.priority,
+                    complexity: formData.complexity,
+                    createdAt: new Date().toISOString(),
+                    demo: true
+                };
+                
+                this.showEstimationResult(this.estimationData);
+                this.hideLoadingState();
+                this.updateDemoStatus();
+            }
+            
+            getFormData() {
+                const repoUrl = document.getElementById('repo-url')?.value;
+                const taskDescription = document.getElementById('task-description')?.value;
+                const priority = document.getElementById('priority')?.value;
+                const complexity = document.getElementById('complexity')?.value;
+                
+                if (!repoUrl || !taskDescription) {
+                    this.showError('Пожалуйста, заполните все обязательные поля');
+                    return null;
+                }
+                
+                if (!this.isValidGitHubUrl(repoUrl)) {
+                    this.showError('Пожалуйста, укажите корректную ссылку на GitHub репозиторий');
+                    return null;
+                }
+                
+                return {
+                    cardId: 'demo_card',
+                    taskDescription: taskDescription,
+                    repoUrl: repoUrl,
+                    priority: priority,
+                    complexity: complexity
+                };
+            }
+            
+            async sendEstimationRequest(formData) {
+                const response = await fetch(`${this.apiUrl}/api/v1/estimate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            }
+            
+            showLoadingState() {
+                const estimateBtn = document.getElementById('estimate-btn');
+                const btnText = document.querySelector('.btn-text');
+                const btnLoading = document.querySelector('.btn-loading');
+                
+                if (estimateBtn && btnText && btnLoading) {
+                    estimateBtn.disabled = true;
+                    btnText.classList.add('hidden');
+                    btnLoading.classList.remove('hidden');
+                }
+            }
+            
+            hideLoadingState() {
+                const estimateBtn = document.getElementById('estimate-btn');
+                const btnText = document.querySelector('.btn-text');
+                const btnLoading = document.querySelector('.btn-loading');
+                
+                if (estimateBtn && btnText && btnLoading) {
+                    estimateBtn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    btnLoading.classList.add('hidden');
+                }
+            }
+            
+            showEstimationResult(estimation) {
+                const estimationForm = document.getElementById('estimation-form');
+                if (estimationForm) {
+                    estimationForm.classList.add('hidden');
+                }
+                
+                const estimationResult = document.getElementById('estimation-result');
+                if (estimationResult) {
+                    estimationResult.classList.remove('hidden');
+                }
+                
+                this.updateStatusBadge(estimation);
+                this.updateEstimationDetails(estimation);
+                this.updateMockCard(estimation);
+            }
+            
+            updateStatusBadge(estimation) {
+                const statusBadge = document.getElementById('status-badge');
+                const statusText = document.querySelector('.status-text');
+                
+                if (statusBadge && statusText) {
+                    statusBadge.className = `status-badge status-${estimation.status}`;
+                    
+                    switch (estimation.status) {
+                        case 'estimated':
+                            statusText.textContent = `✅ Оценка завершена: ${estimation.estimatedHours} часов`;
+                            break;
+                        case 'processing':
+                            statusText.textContent = '⏳ Оценка выполняется...';
+                            break;
+                        case 'failed':
+                            statusText.textContent = '❌ Ошибка оценки';
+                            break;
+                        default:
+                            statusText.textContent = '❓ Неизвестный статус';
+                    }
+                }
+            }
+            
+            updateEstimationDetails(estimation) {
+                const estimateDetails = document.getElementById('estimate-details');
+                
+                if (estimateDetails) {
+                    let detailsHTML = '';
+                    
+                    if (estimation.status === 'estimated') {
+                        detailsHTML = `
+                            <h4>📊 Детали оценки</h4>
+                            <p><span class="highlight">Прогноз времени:</span> ${estimation.estimatedHours} часов</p>
+                            <p><span class="highlight">Уверенность:</span> ${estimation.confidence}%</p>
+                            <p><span class="highlight">Дата оценки:</span> ${new Date(estimation.createdAt).toLocaleString('ru-RU')}</p>
+                            <p><span class="highlight">Статус:</span> Оценка завершена успешно</p>
+                            ${estimation.demo ? '<p><em>🎭 Демо-режим</em></p>' : ''}
+                        `;
+                    }
+                    
+                    estimateDetails.innerHTML = detailsHTML;
+                }
+            }
+            
+            updateMockCard(estimation) {
+                // Обновляем мок-карточку
+                const cardBadges = document.getElementById('card-badges-2');
+                if (cardBadges) {
+                    cardBadges.innerHTML = `
+                        <span class="mock-badge estimated">⏱️ ${estimation.estimatedHours}ч</span>
+                    `;
+                }
+            }
+            
+            async saveEstimation() {
+                if (this.estimationData) {
+                    try {
+                        // В демо-режиме сохраняем локально
+                        if (this.demoMode) {
+                            localStorage.setItem('taskweight_demo_estimation', JSON.stringify(this.estimationData));
+                            this.showSuccess('Оценка успешно сохранена! (демо-режим)');
+                        } else {
+                            // Реальное сохранение
+                            await this.saveEstimationToTrello(this.estimationData);
+                            this.showSuccess('Оценка успешно сохранена в Trello!');
+                        }
+                        
+                        setTimeout(() => this.resetForm(), 1500);
+                        
+                    } catch (error) {
+                        console.error('Ошибка сохранения:', error);
+                        this.showError('Ошибка при сохранении оценки');
+                    }
+                }
+            }
+            
+            async saveEstimationToTrello(estimation) {
+                // Заглушка для реальной интеграции
+                console.log('Сохранение в Trello:', estimation);
+            }
+            
+            resetForm() {
+                const estimationResult = document.getElementById('estimation-result');
+                if (estimationResult) {
+                    estimationResult.classList.add('hidden');
+                }
+                
+                const estimationForm = document.getElementById('estimation-form');
+                if (estimationForm) {
+                    estimationForm.classList.remove('hidden');
+                }
+                
+                this.clearForm();
+                this.estimationData = null;
+            }
+            
+            clearForm() {
+                const repoUrl = document.getElementById('repo-url');
+                const taskDescription = document.getElementById('task-description');
+                const priority = document.getElementById('priority');
+                const complexity = document.getElementById('complexity');
+                
+                if (repoUrl) repoUrl.value = '';
+                if (taskDescription) taskDescription.value = '';
+                if (priority) priority.value = 'medium';
+                if (complexity) complexity.value = 'medium';
+                
+                this.validateForm();
+            }
+            
+            loadDemoData() {
+                const saved = localStorage.getItem('taskweight_demo_estimation');
+                if (saved) {
+                    try {
+                        this.estimationData = JSON.parse(saved);
+                        console.log('Загружены демо-данные:', this.estimationData);
+                    } catch (error) {
+                        console.error('Ошибка загрузки демо-данных:', error);
+                    }
+                }
+            }
+            
+            updateDemoStatus() {
+                const statusElement = document.getElementById('demo-status');
+                if (statusElement) {
+                    const statusItems = statusElement.querySelectorAll('.demo-status-item');
+                    
+                    if (this.estimationData) {
+                        statusItems[2].innerHTML = `
+                            <span class="label">Статус:</span>
+                            <span class="value status-ok">Оценка: ${this.estimationData.estimatedHours}ч</span>
+                        `;
+                    } else {
+                        statusItems[2].innerHTML = `
+                            <span class="label">Статус:</span>
+                            <span class="value status-ok">Готов</span>
+                        `;
+                    }
+                }
+            }
+            
+            showError(message) {
+                const errorMessage = document.getElementById('error-message');
+                const errorText = document.getElementById('error-text');
+                
+                if (errorMessage && errorText) {
+                    errorText.textContent = message;
+                    errorMessage.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        errorMessage.classList.add('hidden');
+                    }, 5000);
+                }
+            }
+            
+            showSuccess(message) {
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success-message';
+                successDiv.innerHTML = `<p>✅ ${message}</p>`;
+                
+                const container = document.querySelector('.power-up-container');
+                if (container) {
+                    container.appendChild(successDiv);
+                    
+                    setTimeout(() => {
+                        if (successDiv.parentNode) {
+                            successDiv.parentNode.removeChild(successDiv);
+                        }
+                    }, 3000);
+                }
+            }
+        }
+        
+        // Глобальные функции для демо-контролов
+        let demoInstance = null;
+        
+        function simulateSuccess() {
+            if (demoInstance) {
+                demoInstance.estimationData = {
+                    id: 'demo_success',
+                    cardId: 'demo_card',
+                    status: 'estimated',
+                    estimatedHours: 12,
+                    confidence: 85,
+                    taskDescription: 'Демо задача',
+                    repoUrl: 'https://github.com/demo/repo',
+                    priority: 'medium',
+                    complexity: 'medium',
+                    createdAt: new Date().toISOString(),
+                    demo: true
+                };
+                demoInstance.showEstimationResult(demoInstance.estimationData);
+                demoInstance.updateDemoStatus();
+            }
+        }
+        
+        function simulateProcessing() {
+            if (demoInstance) {
+                demoInstance.estimationData = {
+                    id: 'demo_processing',
+                    cardId: 'demo_card',
+                    status: 'processing',
+                    createdAt: new Date().toISOString(),
+                    demo: true
+                };
+                demoInstance.showEstimationResult(demoInstance.estimationData);
+                demoInstance.updateDemoStatus();
+            }
+        }
+        
+        function simulateError() {
+            if (demoInstance) {
+                demoInstance.showError('Демо ошибка: Сервер недоступен');
+            }
+        }
+        
+        function resetDemo() {
+            if (demoInstance) {
+                demoInstance.resetForm();
+                demoInstance.estimationData = null;
+                demoInstance.updateDemoStatus();
+                localStorage.removeItem('taskweight_demo_estimation');
+            }
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            demoInstance = new TaskWeightDemo();
+        });
+    </script>
+</body>
+</html>

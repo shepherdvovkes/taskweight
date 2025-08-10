@@ -1,0 +1,14 @@
+# TaskWeight Database Backup Schedule
+# This file should be added to the system crontab
+
+# Daily backup at 2:00 AM
+0 2 * * * cd /path/to/taskweight/database && ./scripts/backup.sh >> /var/log/taskweight_backup.log 2>&1
+
+# Weekly backup on Sunday at 3:00 AM
+0 3 * * 0 cd /path/to/taskweight/database && ./scripts/backup.sh >> /var/log/taskweight_backup.log 2>&1
+
+# Monthly backup on the 1st at 4:00 AM
+0 4 1 * * cd /path/to/taskweight/database && ./scripts/backup.sh >> /var/log/taskweight_backup.log 2>&1
+
+# Clean old log files monthly
+0 5 1 * * find /var/log/taskweight_backup.log* -mtime +90 -delete

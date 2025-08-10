@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskWeight Настройки</title>
+    <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .settings-container { padding: 16px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h2 { margin: 0; color: #172b4d; }
+        .header p { margin: 5px 0; color: #6b778c; font-size: 14px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #172b4d; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #dfe1e6; border-radius: 3px; font-size: 14px; }
+        .form-group select { background: white; }
+        .btn { padding: 8px 16px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-primary { background: #0079bf; color: white; }
+        .btn-primary:hover { background: #026aa7; }
+        .btn-secondary { background: #f4f5f7; color: #172b4d; margin-left: 8px; }
+        .btn-secondary:hover { background: #ebecf0; }
+        .hidden { display: none; }
+        .success-message { padding: 12px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 3px; margin: 16px 0; }
+        .error-message { padding: 12px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 3px; margin: 16px 0; }
+        .info-box { padding: 12px; background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; border-radius: 3px; margin: 16px 0; }
+        .checkbox-group { display: flex; align-items: center; margin-bottom: 16px; }
+        .checkbox-group input[type="checkbox"] { margin-right: 8px; }
+        .checkbox-group label { margin: 0; font-weight: normal; }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="header">
+            <h2>⚙️ Настройки TaskWeight</h2>
+            <p>Настройте параметры AI-оценки задач</p>
+        </div>
+        
+        <div id="settings-form">
+            <div class="form-group">
+                <label for="api-url">API URL:</label>
+                <input type="url" id="api-url" placeholder="https://your-domain.com" value="http://localhost:8000">
+            </div>
+            
+            <div class="form-group">
+                <label for="estimation-model">Модель AI:</label>
+                <select id="estimation-model">
+                    <option value="gpt-4">GPT-4 (рекомендуется)</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="confidence-threshold">Порог уверенности (%):</label>
+                <input type="number" id="confidence-threshold" min="50" max="95" value="80">
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="auto-estimate" checked>
+                <label for="auto-estimate">Автоматически оценивать новые карточки</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="show-details" checked>
+                <label for="show-details">Показывать детали оценки</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="enable-notifications">
+                <label for="enable-notifications">Уведомления о завершении оценки</label>
+            </div>
+            
+            <button id="save-settings" class="btn btn-primary">Сохранить настройки</button>
+            <button id="reset-settings" class="btn btn-secondary">Сбросить</button>
+        </div>
+        
+        <div id="success-message" class="success-message hidden">
+            <p>✅ Настройки успешно сохранены!</p>
+        </div>
+        
+        <div id="error-message" class="error-message hidden">
+            <p id="error-text"></p>
+        </div>
+        
+        <div class="info-box">
+            <h4>ℹ️ Информация</h4>
+            <p><strong>API URL:</strong> Адрес вашего TaskWeight сервера</p>
+            <p><strong>Модель AI:</strong> Выберите модель OpenAI для оценки</p>
+            <p><strong>Порог уверенности:</strong> Минимальная уверенность для принятия оценки</p>
+        </div>
+    </div>
+    
+    <script>
+        // Инициализация Power-Up
+        let t = window.TrelloPowerUp.iframe();
+        
+        // Загрузка сохраненных настроек
+        async function loadSettings() {
+            try {
+                const settings = await t.arg('settings');
+                if (settings) {
+                    document.getElementById('api-url').value = settings.apiUrl || 'http://localhost:8000';
+                    document.getElementById('estimation-model').value = settings.estimationModel || 'gpt-4';
+                    document.getElementById('confidence-threshold').value = settings.confidenceThreshold || 80;
+                    document.getElementById('auto-estimate').checked = settings.autoEstimate !== false;
+                    document.getElementById('show-details').checked = settings.showDetails !== false;
+                    document.getElementById('enable-notifications').checked = settings.enableNotifications || false;
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки настроек:', error);
+            }
+        }
+        
+        // Сохранение настроек
+        async function saveSettings() {
+            try {
+                const settings = {
+                    apiUrl: document.getElementById('api-url').value,
+                    estimationModel: document.getElementById('estimation-model').value,
+                    confidenceThreshold: parseInt(document.getElementById('confidence-threshold').value),
+                    autoEstimate: document.getElementById('auto-estimate').checked,
+                    showDetails: document.getElementById('show-details').checked,
+                    enableNotifications: document.getElementById('enable-notifications').checked
+                };
+                
+                await t.arg('settings', settings);
+                
+                showMessage('success', 'Настройки успешно сохранены!');
+                
+                // Обновляем Power-Up
+                t.arg('callback')({ success: true, settings: settings });
+                
+            } catch (error) {
+                showMessage('error', 'Ошибка сохранения настроек: ' + error.message);
+            }
+        }
+        
+        // Сброс настроек
+        function resetSettings() {
+            document.getElementById('api-url').value = 'http://localhost:8000';
+            document.getElementById('estimation-model').value = 'gpt-4';
+            document.getElementById('confidence-threshold').value = 80;
+            document.getElementById('auto-estimate').checked = true;
+            document.getElementById('show-details').checked = true;
+            document.getElementById('enable-notifications').checked = false;
+        }
+        
+        // Показать сообщение
+        function showMessage(type, text) {
+            const successMsg = document.getElementById('success-message');
+            const errorMsg = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            
+            successMsg.classList.add('hidden');
+            errorMsg.classList.add('hidden');
+            
+            if (type === 'success') {
+                successMsg.classList.remove('hidden');
+                setTimeout(() => successMsg.classList.add('hidden'), 3000);
+            } else if (type === 'error') {
+                errorText.textContent = text;
+                errorMsg.classList.remove('hidden');
+            }
+        }
+        
+        // Обработчики событий
+        document.getElementById('save-settings').addEventListener('click', saveSettings);
+        document.getElementById('reset-settings').addEventListener('click', resetSettings);
+        
+        // Загружаем настройки при загрузке страницы
+        document.addEventListener('DOMContentLoaded', loadSettings);
+    </script>
+</body>
+</html>
