@@ -60,12 +60,131 @@ class TaskWeightPowerUp {
                 this.estimationData = estimation;
                 this.showEstimationResult(estimation);
                 this.logger.info('Существующая оценка загружена:', estimation);
+                
+                // Загружаем дополнительную статистику
+                await this.loadCardStatistics();
             }
         } catch (error) {
             this.logger.log('Существующая оценка не найдена');
         }
     }
     
+    async loadCardStatistics() {
+        try {
+            const response = await fetch(`${this.apiUrl}/api/v1/trello/card/${this.currentCardId}/stats`);
+            if (response.ok) {
+                const stats = await response.json();
+                this.showCardStatistics(stats);
+                this.logger.info('Статистика карточки загружена:', stats);
+            }
+        } catch (error) {
+            this.logger.warn('Не удалось загрузить статистику карточки:', error);
+        }
+    }
+    
+    showCardStatistics(stats) {
+        const statsContainer = document.getElementById('card-statistics');
+        if (!statsContainer) return;
+        
+        let statsHTML = `
+            <div class="stats-section">
+                <h4>📊 Статистика карточки</h4>
+                <div class="stats-grid">
+        `;
+        
+        // Статистика точности
+        if (stats.accuracy) {
+            statsHTML += `
+                <div class="stat-item">
+                    <span class="stat-label">Точность оценок:</span>
+                    <span class="stat-value">${stats.accuracy.average_accuracy || 0}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Всего оценок:</span>
+                    <span class="stat-value">${stats.accuracy.total_estimations || 0}</span>
+                </div>
+            `;
+        }
+        
+        // Распределение по сложности
+        if (stats.complexityDistribution) {
+            const complexityStats = Object.entries(stats.complexityDistribution)
+                .filter(([_, count]) => count > 0)
+                .map(([complexity, count]) => `${complexity}: ${count}`)
+                .join(', ');
+            
+            if (complexityStats) {
+                statsHTML += `
+                    <div class="stat-item">
+                        <span class="stat-label">Сложность:</span>
+                        <span class="stat-value">${complexityStats}</span>
+                    </div>
+                `;
+            }
+        }
+        
+        // Распределение по приоритету
+        if (stats.priorityDistribution) {
+            const priorityStats = Object.entries(stats.priorityDistribution)
+                .filter(([_, count]) => count > 0)
+                .map(([priority, count]) => `${priority}: ${count}`)
+                .join(', ');
+            
+            if (priorityStats) {
+                statsHTML += `
+                    <div class="stat-item">
+                        <span class="stat-label">Приоритет:</span>
+                        <span class="stat-value">${priorityStats}</span>
+                    </div>
+                `;
+            }
+        }
+        
+        statsHTML += `
+                </div>
+            </div>
+        `;
+        
+        // История оценок
+        if (stats.history && stats.history.estimations && stats.history.estimations.length > 0) {
+            statsHTML += `
+                <div class="history-section">
+                    <h4>📈 История оценок</h4>
+                    <div class="history-list">
+            `;
+            
+            stats.history.estimations.slice(0, 3).forEach(est => {
+                const date = new Date(est.createdAt).toLocaleDateString('ru-RU');
+                const status = this.getStatusEmoji(est.status);
+                statsHTML += `
+                    <div class="history-item">
+                        <span class="history-date">${date}</span>
+                        <span class="history-status">${status}</span>
+                        <span class="history-hours">${est.estimatedHours || 0}ч</span>
+                    </div>
+                `;
+            });
+            
+            statsHTML += `
+                    </div>
+                </div>
+            `;
+        }
+        
+        statsContainer.innerHTML = statsHTML;
+        statsContainer.classList.remove('hidden');
+    }
+    
+    getStatusEmoji(status) {
+        switch (status) {
+            case 'estimated': return '✅';
+            case 'processing': return '⏳';
+            case 'completed': return '🎯';
+            case 'failed': return '❌';
+            default: return '❓';
+        }
+    }
+
     async checkApiConnection() {
         try {
             const response = await fetch(`${this.apiUrl}/health`, { 
@@ -123,6 +242,12 @@ class TaskWeightPowerUp {
         const exportBtn = document.getElementById('export-estimation');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => this.exportEstimation());
+        }
+        
+        // Кнопка переоценки
+        const reestimateBtn = document.getElementById('reestimate-btn');
+        if (reestimateBtn) {
+            reestimateBtn.addEventListener('click', () => this.reestimateTask());
         }
         
         // Валидация формы
@@ -225,8 +350,11 @@ class TaskWeightPowerUp {
             // Проверяем подключение к API
             await this.checkApiConnection();
             
-            // Отправляем запрос на оценку
-            const response = await this.sendEstimationRequest(formData);
+            // Получаем данные карточки Trello для улучшенной оценки
+            const cardData = await this.getTrelloCardData();
+            
+            // Отправляем запрос на оценку с Trello контекстом
+            const response = await this.sendEnhancedEstimationRequest(formData, cardData);
             
             if (response.status === 'processing') {
                 this.logger.info('Оценка запущена, начинаем опрос статуса');
@@ -240,6 +368,32 @@ class TaskWeightPowerUp {
             this.logger.error('Ошибка оценки:', error);
             this.showError('Ошибка при оценке задачи: ' + error.message);
             this.hideLoadingState();
+        }
+    }
+    
+    async getTrelloCardData() {
+        try {
+            // Получаем данные карточки через Trello API
+            const cardData = await this.t.card('id', 'name', 'desc', 'labels', 'due', 'idMembers', 'checklists', 'attachments', 'badges');
+            
+            return {
+                id: cardData.id,
+                name: cardData.name,
+                desc: cardData.desc,
+                labels: cardData.labels || [],
+                due: cardData.due,
+                idMembers: cardData.idMembers || [],
+                checklists: cardData.checklists || [],
+                attachments: cardData.attachments || [],
+                badges: cardData.badges || {}
+            };
+        } catch (error) {
+            this.logger.warn('Не удалось получить данные карточки Trello:', error);
+            return {
+                id: this.currentCardId,
+                name: 'Карточка Trello',
+                desc: 'Описание недоступно'
+            };
         }
     }
     
@@ -267,27 +421,6 @@ class TaskWeightPowerUp {
             complexity: complexity,
             timestamp: new Date().toISOString()
         };
-    }
-    
-    async sendEstimationRequest(formData) {
-        this.logger.info('Отправка запроса на оценку:', formData);
-        
-        const response = await fetch(`${this.apiUrl}/api/v1/estimate`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
-        }
-        
-        const result = await response.json();
-        this.logger.info('Ответ от API:', result);
-        return result;
     }
     
     async pollEstimationStatus(cardId) {
@@ -347,6 +480,91 @@ class TaskWeightPowerUp {
         poll();
     }
     
+    async sendEnhancedEstimationRequest(formData, cardData) {
+        this.logger.info('Отправка улучшенного запроса на оценку:', { formData, cardData });
+        
+        // Используем новый эндпоинт для Trello карточек
+        const response = await fetch(`${this.apiUrl}/api/v1/trello/card/${this.currentCardId}/estimate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...formData,
+                trelloCardData: cardData
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+        }
+        
+        const result = await response.json();
+        this.logger.info('Ответ от улучшенного API:', result);
+        return result;
+    }
+
+    async updateCardMetadata(metadata) {
+        try {
+            const response = await fetch(`${this.apiUrl}/api/v1/trello/card/${this.currentCardId}/metadata`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(metadata)
+            });
+            
+            if (response.ok) {
+                this.logger.info('Метаданные карточки обновлены');
+                return true;
+            } else {
+                this.logger.warn('Не удалось обновить метаданные карточки');
+                return false;
+            }
+        } catch (error) {
+            this.logger.error('Ошибка обновления метаданных:', error);
+            return false;
+        }
+    }
+
+    async reestimateTask(reason = 'Запрос пользователя') {
+        try {
+            this.logger.info('Запуск переоценки задачи');
+            
+            this.showLoadingState();
+            
+            const response = await fetch(`${this.apiUrl}/api/v1/trello/card/${this.currentCardId}/reestimate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reason })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                this.logger.info('Переоценка запущена:', result);
+                
+                // Показываем сообщение о переоценке
+                this.showSuccess('Переоценка запущена!');
+                
+                // Обновляем данные
+                this.estimationData = result;
+                this.showEstimationResult(result);
+                
+            } else {
+                throw new Error('Ошибка при запуске переоценки');
+            }
+            
+        } catch (error) {
+            this.logger.error('Ошибка переоценки:', error);
+            this.showError('Ошибка при переоценке: ' + error.message);
+        } finally {
+            this.hideLoadingState();
+        }
+    }
+
     showLoadingState() {
         const estimateBtn = document.getElementById('estimate-btn');
         const btnText = document.querySelector('.btn-text');
@@ -390,6 +608,9 @@ class TaskWeightPowerUp {
         // Обновляем детали
         this.updateEstimationDetails(estimation);
         
+        // Показываем Trello факторы если есть
+        this.showTrelloFactors(estimation);
+        
         // Сохраняем в Trello
         this.saveEstimationToTrello(estimation);
         
@@ -400,6 +621,59 @@ class TaskWeightPowerUp {
         if (this.settings.enableNotifications) {
             this.showNotification('Оценка завершена', `Задача оценена в ${estimation.estimatedHours} часов`);
         }
+    }
+    
+    showTrelloFactors(estimation) {
+        const trelloFactorsContainer = document.getElementById('trello-factors');
+        if (!trelloFactorsContainer || !estimation.metadata) return;
+        
+        const trelloAnalysis = estimation.metadata.trello_analysis;
+        if (!trelloAnalysis) return;
+        
+        let factorsHTML = '<h4>🏷️ Факторы Trello</h4><div class="trello-factors-list">';
+        
+        // Показываем индикаторы сложности
+        if (trelloAnalysis.complexity_indicators && trelloAnalysis.complexity_indicators.length > 0) {
+            factorsHTML += `
+                <div class="factor-group">
+                    <span class="factor-label">Сложность:</span>
+                    <span class="factor-values">${trelloAnalysis.complexity_indicators.join(', ')}</span>
+                </div>
+            `;
+        }
+        
+        // Показываем индикаторы приоритета
+        if (trelloAnalysis.priority_indicators && trelloAnalysis.priority_indicators.length > 0) {
+            factorsHTML += `
+                <div class="factor-group">
+                    <span class="factor-label">Приоритет:</span>
+                    <span class="factor-values">${trelloAnalysis.priority_indicators.join(', ')}</span>
+                </div>
+            `;
+        }
+        
+        // Показываем общую статистику
+        if (trelloAnalysis.label_count > 0) {
+            factorsHTML += `
+                <div class="factor-group">
+                    <span class="factor-label">Метки:</span>
+                    <span class="factor-values">${trelloAnalysis.label_count} шт.</span>
+                </div>
+            `;
+        }
+        
+        if (trelloAnalysis.has_due_date) {
+            factorsHTML += `
+                <div class="factor-group">
+                    <span class="factor-label">Срок:</span>
+                    <span class="factor-values">Установлен</span>
+                </div>
+            `;
+        }
+        
+        factorsHTML += '</div>';
+        trelloFactorsContainer.innerHTML = factorsHTML;
+        trelloFactorsContainer.classList.remove('hidden');
     }
     
     updateStatusBadge(estimation) {

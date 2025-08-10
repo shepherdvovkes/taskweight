@@ -2,18 +2,7 @@ FROM postgres:15-alpine
 
 # Install additional packages
 RUN apk add --no-cache \
-    postgresql-contrib \
-    postgresql-dev \
-    gcc \
-    musl-dev \
-    make \
-    python3 \
-    py3-pip
-
-# Install Python packages for extensions
-RUN pip3 install --no-cache-dir \
-    psycopg2-binary \
-    python-dateutil
+    postgresql-contrib
 
 # Copy custom configuration
 COPY conf/postgresql.conf /etc/postgresql/postgresql.conf

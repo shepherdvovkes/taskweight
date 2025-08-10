@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskWeight API Test - Тестирование API</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #172b4d;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+        }
+        
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #172b4d;
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #172b4d;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dfe1e6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: #0079bf;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #026aa7;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.checking {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .endpoint-list {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .endpoint-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #0079bf;
+        }
+        
+        .endpoint-method {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .method-get {
+            background: #61affe;
+            color: white;
+        }
+        
+        .method-post {
+            background: #49cc90;
+            color: white;
+        }
+        
+        .method-put {
+            background: #fca130;
+            color: white;
+        }
+        
+        .method-delete {
+            background: #f93e3e;
+            color: white;
+        }
+        
+        .endpoint-url {
+            font-family: monospace;
+            font-size: 13px;
+            color: #172b4d;
+        }
+        
+        .endpoint-description {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #6b778c;
+        }
+        
+        .test-controls {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .test-controls h4 {
+            margin: 0 0 15px 0;
+            color: #172b4d;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .info-box h4 {
+            margin: 0 0 10px 0;
+            color: #1565c0;
+        }
+        
+        .info-box p {
+            margin: 0 0 8px 0;
+            color: #1976d2;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 TaskWeight API Test</h1>
+            <p>Тестирование API интеграции для плагина Trello</p>
+        </div>
+        
+        <div class="content">
+            <!-- Настройки API -->
+            <div class="test-section">
+                <h3>⚙️ Настройки API</h3>
+                <div class="form-group">
+                    <label for="api-url">API URL:</label>
+                    <input type="url" id="api-url" value="http://localhost:8000" placeholder="https://your-domain.com">
+                </div>
+                <button class="btn btn-primary" onclick="testConnection()">🔍 Проверить подключение</button>
+                <span id="connection-status" class="status checking">Проверка...</span>
+            </div>
+            
+            <!-- Тест оценки -->
+            <div class="test-section">
+                <h3>🎯 Тест оценки задачи</h3>
+                <div class="form-group">
+                    <label for="test-repo-url">GitHub репозиторий:</label>
+                    <input type="url" id="test-repo-url" value="https://github.com/example/repo" placeholder="https://github.com/user/repo">
+                </div>
+                <div class="form-group">
+                    <label for="test-task-description">Описание задачи:</label>
+                    <textarea id="test-task-description" placeholder="Опишите задачу для тестирования...">Создать API endpoint для оценки сложности задач с использованием AI</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="test-priority">Приоритет:</label>
+                    <select id="test-priority">
+                        <option value="low">Низкий</option>
+                        <option value="medium" selected>Средний</option>
+                        <option value="high">Высокий</option>
+                        <option value="urgent">Срочный</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="test-complexity">Сложность:</label>
+                    <select id="test-complexity">
+                        <option value="simple">Простая</option>
+                        <option value="medium" selected>Средняя</option>
+                        <option value="complex">Сложная</option>
+                        <option value="very-complex">Очень сложная</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="testEstimation()">🚀 Запустить оценку</button>
+                <button class="btn btn-secondary" onclick="clearEstimationResult()">🗑️ Очистить результат</button>
+                <div id="estimation-result" class="result" style="display: none;"></div>
+            </div>
+            
+            <!-- Тест получения статуса -->
+            <div class="test-section">
+                <h3>📊 Тест получения статуса</h3>
+                <div class="form-group">
+                    <label for="test-card-id">Card ID:</label>
+                    <input type="text" id="test-card-id" placeholder="Введите ID карточки для проверки статуса">
+                </div>
+                <button class="btn btn-primary" onclick="testGetStatus()">📋 Получить статус</button>
+                <button class="btn btn-secondary" onclick="clearStatusResult()">🗑️ Очистить результат</button>
+                <div id="status-result" class="result" style="display: none;"></div>
+            </div>
+            
+            <!-- Тест webhook -->
+            <div class="test-section">
+                <h3>🔗 Тест webhook</h3>
+                <div class="form-group">
+                    <label for="webhook-url">Webhook URL:</label>
+                    <input type="url" id="webhook-url" value="http://localhost:8000/api/v1/webhooks/trello" placeholder="URL для отправки webhook">
+                </div>
+                <button class="btn btn-primary" onclick="testWebhook()">📤 Отправить webhook</button>
+                <button class="btn btn-secondary" onclick="clearWebhookResult()">🗑️ Очистить результат</button>
+                <div id="webhook-result" class="result" style="display: none;"></div>
+            </div>
+            
+            <!-- Доступные endpoints -->
+            <div class="test-section">
+                <h3>📚 Доступные API endpoints</h3>
+                <div class="endpoint-list">
+                    <div class="endpoint-item">
+                        <span class="endpoint-method method-post">POST</span>
+                        <span class="endpoint-url">/api/v1/estimate</span>
+                        <div class="endpoint-description">Запуск оценки задачи</div>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="endpoint-method method-get">GET</span>
+                        <span class="endpoint-url">/api/v1/estimate/{card_id}</span>
+                        <div class="endpoint-description">Получение статуса оценки</div>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="endpoint-method method-get">GET</span>
+                        <span class="endpoint-url">/health</span>
+                        <div class="endpoint-description">Проверка состояния API</div>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="endpoint-method method-post">POST</span>
+                        <span class="endpoint-url">/api/v1/webhooks/trello</span>
+                        <div class="endpoint-description">Webhook для уведомлений</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Управление тестами -->
+            <div class="test-controls">
+                <h4>🎮 Управление тестами</h4>
+                <div class="control-group">
+                    <button class="btn btn-success" onclick="runAllTests()">✅ Запустить все тесты</button>
+                    <button class="btn btn-secondary" onclick="clearAllResults()">🗑️ Очистить все результаты</button>
+                    <button class="btn btn-danger" onclick="resetSettings()">🔄 Сбросить настройки</button>
+                </div>
+            </div>
+            
+            <!-- Информация -->
+            <div class="info-box">
+                <h4>ℹ️ Информация о тестировании</h4>
+                <p><strong>Цель:</strong> Проверить работоспособность API перед интеграцией с плагином</p>
+                <p><strong>Требования:</strong> Запущенный TaskWeight сервер на указанном URL</p>
+                <p><strong>Порядок тестирования:</strong> Сначала проверьте подключение, затем протестируйте основные endpoints</p>
+                <p><strong>Логи:</strong> Все запросы и ответы отображаются в консоли браузера</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        class ApiTester {
+            constructor() {
+                this.apiUrl = 'http://localhost:8000';
+                this.init();
+            }
+            
+            init() {
+                this.loadSettings();
+                this.testConnection();
+            }
+            
+            loadSettings() {
+                const saved = localStorage.getItem('taskweight_api_test_settings');
+                if (saved) {
+                    try {
+                        const settings = JSON.parse(saved);
+                        this.apiUrl = settings.apiUrl || this.apiUrl;
+                        document.getElementById('api-url').value = this.apiUrl;
+                    } catch (error) {
+                        console.error('Ошибка загрузки настроек:', error);
+                    }
+                }
+            }
+            
+            saveSettings() {
+                const settings = {
+                    apiUrl: this.apiUrl
+                };
+                localStorage.setItem('taskweight_api_test_settings', JSON.stringify(settings));
+            }
+            
+            updateApiUrl() {
+                this.apiUrl = document.getElementById('api-url').value;
+                this.saveSettings();
+            }
+            
+            async testConnection() {
+                this.updateApiUrl();
+                this.updateConnectionStatus('checking', 'Проверка...');
+                
+                try {
+                    const response = await fetch(`${this.apiUrl}/health`, {
+                        method: 'GET',
+                        timeout: 5000
+                    });
+                    
+                    if (response.ok) {
+                        this.updateConnectionStatus('connected', 'Подключено');
+                        this.showResult('connection-result', '✅ API доступен и работает корректно', 'success');
+                    } else {
+                        this.updateConnectionStatus('disconnected', 'Ошибка: ' + response.status);
+                        this.showResult('connection-result', `❌ API недоступен: HTTP ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    this.updateConnectionStatus('disconnected', 'Не подключено');
+                    this.showResult('connection-result', `❌ Ошибка подключения: ${error.message}`, 'error');
+                }
+            }
+            
+            updateConnectionStatus(status, text) {
+                const statusElement = document.getElementById('connection-status');
+                if (statusElement) {
+                    statusElement.className = `status ${status}`;
+                    statusElement.textContent = text;
+                }
+            }
+            
+            async testEstimation() {
+                this.updateApiUrl();
+                
+                const formData = {
+                    cardId: 'test_card_' + Date.now(),
+                    taskDescription: document.getElementById('test-task-description').value,
+                    repoUrl: document.getElementById('test-repo-url').value,
+                    priority: document.getElementById('test-priority').value,
+                    complexity: document.getElementById('test-complexity').value,
+                    timestamp: new Date().toISOString()
+                };
+                
+                try {
+                    console.log('Отправка запроса на оценку:', formData);
+                    
+                    const response = await fetch(`${this.apiUrl}/api/v1/estimate`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        this.showResult('estimation-result', `✅ Оценка запущена успешно!\n\nОтвет API:\n${JSON.stringify(result, null, 2)}`, 'success');
+                        
+                        // Если есть cardId, сохраняем для тестирования статуса
+                        if (result.cardId) {
+                            document.getElementById('test-card-id').value = result.cardId;
+                        }
+                    } else {
+                        this.showResult('estimation-result', `❌ Ошибка API: ${response.status}\n\n${JSON.stringify(result, null, 2)}`, 'error');
+                    }
+                } catch (error) {
+                    this.showResult('estimation-result', `❌ Ошибка запроса: ${error.message}`, 'error');
+                }
+            }
+            
+            async testGetStatus() {
+                this.updateApiUrl();
+                
+                const cardId = document.getElementById('test-card-id').value;
+                if (!cardId) {
+                    this.showResult('status-result', '❌ Введите ID карточки', 'error');
+                    return;
+                }
+                
+                try {
+                    console.log('Запрос статуса для карточки:', cardId);
+                    
+                    const response = await fetch(`${this.apiUrl}/api/v1/estimate/${cardId}`);
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        this.showResult('status-result', `✅ Статус получен!\n\nОтвет API:\n${JSON.stringify(result, null, 2)}`, 'success');
+                    } else {
+                        this.showResult('status-result', `❌ Ошибка API: ${response.status}\n\n${JSON.stringify(result, null, 2)}`, 'error');
+                    }
+                } catch (error) {
+                    this.showResult('status-result', `❌ Ошибка запроса: ${error.message}`, 'error');
+                }
+            }
+            
+            async testWebhook() {
+                this.updateApiUrl();
+                
+                const webhookUrl = document.getElementById('webhook-url').value;
+                if (!webhookUrl) {
+                    this.showResult('webhook-result', '❌ Введите URL webhook', 'error');
+                    return;
+                }
+                
+                const webhookData = {
+                    event: 'estimation.completed',
+                    cardId: 'test_card_' + Date.now(),
+                    estimation: {
+                        id: 'test_estimation_' + Date.now(),
+                        status: 'estimated',
+                        estimatedHours: 8.5,
+                        confidence: 85,
+                        createdAt: new Date().toISOString()
+                    },
+                    timestamp: new Date().toISOString()
+                };
+                
+                try {
+                    console.log('Отправка webhook:', webhookData);
+                    
+                    const response = await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(webhookData)
+                    });
+                    
+                    const result = await response.text();
+                    
+                    if (response.ok) {
+                        this.showResult('webhook-result', `✅ Webhook отправлен успешно!\n\nОтвет сервера:\n${result}`, 'success');
+                    } else {
+                        this.showResult('webhook-result', `❌ Ошибка webhook: ${response.status}\n\n${result}`, 'error');
+                    }
+                } catch (error) {
+                    this.showResult('webhook-result', `❌ Ошибка отправки: ${error.message}`, 'error');
+                }
+            }
+            
+            showResult(elementId, message, type) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = message;
+                    element.className = `result ${type}`;
+                    element.style.display = 'block';
+                }
+            }
+            
+            clearResult(elementId) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.style.display = 'none';
+                    element.textContent = '';
+                }
+            }
+            
+            async runAllTests() {
+                console.log('Запуск всех тестов...');
+                
+                // Тест подключения
+                await this.testConnection();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Тест оценки
+                await this.testEstimation();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Тест статуса (если есть cardId)
+                const cardId = document.getElementById('test-card-id').value;
+                if (cardId) {
+                    await this.testGetStatus();
+                }
+                
+                console.log('Все тесты завершены');
+            }
+            
+            clearAllResults() {
+                this.clearResult('estimation-result');
+                this.clearResult('status-result');
+                this.clearResult('webhook-result');
+            }
+            
+            resetSettings() {
+                this.apiUrl = 'http://localhost:8000';
+                document.getElementById('api-url').value = this.apiUrl;
+                localStorage.removeItem('taskweight_api_test_settings');
+                this.clearAllResults();
+                this.updateConnectionStatus('checking', 'Проверка...');
+            }
+        }
+        
+        // Глобальные функции для кнопок
+        let apiTester = null;
+        
+        function testConnection() {
+            if (apiTester) apiTester.testConnection();
+        }
+        
+        function testEstimation() {
+            if (apiTester) apiTester.testEstimation();
+        }
+        
+        function testGetStatus() {
+            if (apiTester) apiTester.testGetStatus();
+        }
+        
+        function testWebhook() {
+            if (apiTester) apiTester.testWebhook();
+        }
+        
+        function clearEstimationResult() {
+            if (apiTester) apiTester.clearResult('estimation-result');
+        }
+        
+        function clearStatusResult() {
+            if (apiTester) apiTester.clearResult('status-result');
+        }
+        
+        function clearWebhookResult() {
+            if (apiTester) apiTester.clearResult('webhook-result');
+        }
+        
+        function runAllTests() {
+            if (apiTester) apiTester.runAllTests();
+        }
+        
+        function clearAllResults() {
+            if (apiTester) apiTester.clearAllResults();
+        }
+        
+        function resetSettings() {
+            if (apiTester) apiTester.resetSettings();
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            apiTester = new ApiTester();
+        });
+    </script>
+</body>
+</html>

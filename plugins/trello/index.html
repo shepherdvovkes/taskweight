@@ -81,23 +81,22 @@
                 </div>
                 
                 <!-- Результат оценки -->
-                <div id="estimation-result" class="estimation-result hidden">
+                <div id="estimation-result" class="hidden">
                     <h3>Результат оценки</h3>
+                    <div id="status-badge" class="status-badge"></div>
+                    <div id="estimation-details"></div>
                     
-                    <div class="result-content">
-                        <div class="status-badge" id="status-badge">
-                            <span class="status-text">Оценка...</span>
-                        </div>
-                        
-                        <div class="estimate-details" id="estimate-details">
-                            <!-- Детали оценки будут добавлены динамически -->
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button id="save-estimation" class="btn btn-primary">💾 Сохранить оценку</button>
-                            <button id="export-estimation" class="btn btn-secondary">📤 Экспорт</button>
-                            <button id="new-estimation" class="btn btn-secondary">🔄 Новая оценка</button>
-                        </div>
+                    <!-- Новая секция для Trello факторов -->
+                    <div id="trello-factors" class="hidden"></div>
+                    
+                    <!-- Новая секция для статистики карточки -->
+                    <div id="card-statistics" class="hidden"></div>
+                    
+                    <div class="action-buttons">
+                        <button id="save-estimation" class="btn btn-primary">Сохранить оценку</button>
+                        <button id="new-estimation" class="btn btn-secondary">Новая оценка</button>
+                        <button id="export-estimation" class="btn btn-outline">Экспорт</button>
+                        <button id="reestimate-btn" class="btn btn-warning">Переоценить</button>
                     </div>
                 </div>
                 

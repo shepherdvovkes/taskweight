@@ -78,3 +78,96 @@ CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects
 
 CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON tasks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Create estimation_results table
+CREATE TABLE IF NOT EXISTS estimation_results (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    card_id VARCHAR(255) NOT NULL,
+    task_description TEXT NOT NULL,
+    repo_url VARCHAR(500),
+    estimated_hours DECIMAL(5,2),
+    actual_hours DECIMAL(5,2),
+    status VARCHAR(50) DEFAULT 'processing',
+    error_message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Create index for estimation_results
+CREATE INDEX IF NOT EXISTS idx_estimation_results_card_id ON estimation_results(card_id);
+CREATE INDEX IF NOT EXISTS idx_estimation_results_status ON estimation_results(status);
+
+-- Create trigger for estimation_results
+CREATE TRIGGER update_estimation_results_updated_at BEFORE UPDATE ON estimation_results
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Create integrations table
+CREATE TABLE IF NOT EXISTS integrations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    service_type VARCHAR(50) NOT NULL,
+    service_name VARCHAR(100) NOT NULL,
+    api_key VARCHAR(500),
+    api_secret VARCHAR(500),
+    access_token VARCHAR(1000),
+    refresh_token VARCHAR(1000),
+    webhook_url VARCHAR(500),
+    is_active BOOLEAN DEFAULT true,
+    settings JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for integrations
+CREATE INDEX IF NOT EXISTS idx_integrations_user_id ON integrations(user_id);
+CREATE INDEX IF NOT EXISTS idx_integrations_service_type ON integrations(service_type);
+CREATE INDEX IF NOT EXISTS idx_integrations_is_active ON integrations(is_active);
+
+-- Create trigger for integrations
+CREATE TRIGGER update_integrations_updated_at BEFORE UPDATE ON integrations
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Create audit_logs table
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    action VARCHAR(100) NOT NULL,
+    table_name VARCHAR(100),
+    record_id UUID,
+    old_values JSONB,
+    new_values JSONB,
+    ip_address INET,
+    user_agent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for audit_logs
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_table_name ON audit_logs(table_name);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
+
+-- Create user_settings table
+CREATE TABLE IF NOT EXISTS user_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+    timezone VARCHAR(50) DEFAULT 'UTC',
+    language VARCHAR(10) DEFAULT 'en',
+    notification_email BOOLEAN DEFAULT true,
+    notification_push BOOLEAN DEFAULT false,
+    theme VARCHAR(20) DEFAULT 'light',
+    estimation_preferences JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create trigger for user_settings
+CREATE TRIGGER update_user_settings_updated_at BEFORE UPDATE ON user_settings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Note: Additional scripts to run:
+-- 02-migrations.sql - Database migrations
+-- 03-sample-data.sql - Sample data for development
+-- 04-views.sql - Database views
+-- 05-functions.sql - Database functions
