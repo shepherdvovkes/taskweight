@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from datetime import datetime
+from typing import Optional
 
 from .models.estimation import (
     EstimationRequest, EstimationResponse, EstimationResult, 
@@ -12,7 +13,9 @@ from .models.estimation import (
     UserPerformanceStats, ProjectStats, EstimationStatus, TrelloEstimationRequest
 )
 from .models.webhook import TrelloWebhook
-from .db.storage import InMemoryStorage
+from .db.storage_factory import StorageFactory
+from .db.database import get_db_session
+from .db.postgres_storage import PostgreSQLStorage
 from .logic.ai_estimator import AIEstimator
 
 # Загружаем переменные окружения
@@ -33,9 +36,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Инициализация хранилища и AI оценщика
-storage = InMemoryStorage()
-ai_estimator = AIEstimator(storage)
+# Инициализация AI оценщика (storage будет передаваться для каждого запроса)
+ai_estimator = None  # Будет инициализирован для каждого запроса
 
 @app.get("/")
 async def root():
@@ -78,29 +80,32 @@ async def estimate_task(
     Запускает оценку задачи в фоновом режиме
     """
     try:
-        # Создаем запись в хранилище
-        estimation = storage.create_estimation(
-            request.cardId,
-            user_id=getattr(request, 'userId', None),
-            team_id=getattr(request, 'teamId', None),
-            project_id=getattr(request, 'projectId', None)
-        )
-        
-        # Запускаем оценку в фоновом режиме
-        background_tasks.add_task(
-            ai_estimator.estimate_task,
-            request.cardId,
-            request.taskDescription,
-            request.repoUrl,
-            request.priority,
-            request.complexity,
-            getattr(request, 'userId', None),
-            getattr(request, 'teamId', None),
-            getattr(request, 'projectId', None)
-        )
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            # Создаем запись в хранилище
+            estimation = await storage.create_estimation(
+                request.cardId,
+                user_id=getattr(request, 'userId', None),
+                team_id=getattr(request, 'teamId', None),
+                project_id=getattr(request, 'projectId', None)
+            )
+            
+            # Запускаем оценку в фоновом режиме
+            background_tasks.add_task(
+                _estimate_task_background,
+                request.cardId,
+                request.taskDescription,
+                request.repoUrl,
+                request.priority,
+                request.complexity,
+                getattr(request, 'userId', None),
+                getattr(request, 'teamId', None),
+                getattr(request, 'projectId', None)
+            )
         
         return EstimationResponse(
-            status="processing",
+            status=EstimationStatus.PROCESSING,
             message="Оценка задачи запущена",
             cardId=request.cardId
         )
@@ -117,19 +122,22 @@ async def estimate_batch_tasks(
     Запускает batch estimation для множества задач
     """
     try:
-        # Запускаем batch estimation в фоновом режиме
-        background_tasks.add_task(
-            ai_estimator.estimate_batch_tasks,
-            request
-        )
-        
-        # Создаем batch response
-        batch = storage.create_batch_estimation(
-            request.tasks,
-            request.userId,
-            request.teamId,
-            request.projectId
-        )
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            # Создаем batch response
+            batch = await storage.create_batch_estimation(
+                request.tasks,
+                request.userId,
+                request.teamId,
+                request.projectId
+            )
+            
+            # Запускаем batch estimation в фоновом режиме
+            background_tasks.add_task(
+                _estimate_batch_tasks_background,
+                request
+            )
         
         return batch
         
@@ -142,10 +150,12 @@ async def get_batch_status(batch_id: str):
     Получает статус batch estimation
     """
     try:
-        batch = storage.get_batch_status(batch_id)
-        if not batch:
-            raise HTTPException(status_code=404, detail="Batch estimation не найден")
-        return batch
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            batch = await storage.get_batch_status(batch_id)
+            if not batch:
+                raise HTTPException(status_code=404, detail="Batch estimation не найден")
+            return batch
     except HTTPException:
         raise
     except Exception as e:
@@ -158,24 +168,26 @@ async def get_trello_batch_status(batch_id: str):
     Получает детальный статус batch оценки Trello карточек
     """
     try:
-        batch = storage.get_batch_status(batch_id)
-        if not batch:
-            raise HTTPException(status_code=404, detail="Batch estimation не найден")
-        
-        # Получаем детальную информацию о каждой карточке в batch
-        card_details = []
-        for task in batch.tasks if hasattr(batch, 'tasks') else []:
-            card_id = task.get('card_id') if isinstance(task, dict) else str(task)
-            if card_id:
-                estimation = storage.get_estimation_by_card_id(card_id)
-                if estimation:
-                    card_details.append({
-                        "cardId": card_id,
-                        "status": estimation.status,
-                        "estimatedHours": estimation.estimatedHours,
-                        "confidence": estimation.confidence,
-                        "error": estimation.error_message if hasattr(estimation, 'error_message') else None
-                    })
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            batch = await storage.get_batch_status(batch_id)
+            if not batch:
+                raise HTTPException(status_code=404, detail="Batch estimation не найден")
+            
+            # Получаем детальную информацию о каждой карточке в batch
+            card_details = []
+            for task in batch.tasks if hasattr(batch, 'tasks') else []:
+                card_id = task.get('card_id') if isinstance(task, dict) else str(task)
+                if card_id:
+                    estimation = await storage.get_estimation_by_card_id(card_id)
+                    if estimation:
+                        card_details.append({
+                            "cardId": card_id,
+                            "status": estimation.status,
+                            "estimatedHours": estimation.estimatedHours,
+                            "confidence": estimation.confidence,
+                            "error": estimation.error_message if hasattr(estimation, 'error_message') else None
+                        })
         
         return {
             "batchId": batch_id,
@@ -214,22 +226,25 @@ async def update_user_performance(
     Обновляет производительность пользователя и улучшает будущие оценки
     """
     try:
-        # Получаем estimation по card_id
-        estimation = storage.get_estimation_by_card_id(card_id)
-        if not estimation:
-            raise HTTPException(status_code=404, detail="Оценка не найдена")
-        
-        # Обновляем performance_update с правильным estimation_id
-        performance_update.estimationId = estimation.id
-        
-        # Обновляем производительность
-        updated_estimation = await ai_estimator.update_user_performance(performance_update)
-        
-        return {
-            "message": "Производительность пользователя обновлена",
-            "estimation": updated_estimation
-        }
-        
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            # Получаем estimation по card_id
+            estimation = await storage.get_estimation_by_card_id(card_id)
+            if not estimation:
+                raise HTTPException(status_code=404, detail="Оценка не найдена")
+            
+            # Обновляем performance_update с правильным estimation_id
+            performance_update.estimationId = estimation.id
+            
+            # Обновляем производительность
+            updated_estimation = await ai_estimator.update_user_performance(performance_update)
+            
+            return {
+                "message": "Производительность пользователя обновлена",
+                "estimation": updated_estimation
+            }
+            
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -239,8 +254,10 @@ async def get_user_performance_stats(user_id: str):
     Получает статистику производительности пользователя
     """
     try:
-        stats = storage.get_user_performance_stats(user_id)
-        return stats
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            stats = await storage.get_user_performance_stats(user_id)
+            return stats
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -250,12 +267,14 @@ async def get_user_estimations(user_id: str):
     Получает все оценки пользователя
     """
     try:
-        estimations = storage.get_estimations_by_user(user_id)
-        return {
-            "userId": user_id,
-            "totalEstimations": len(estimations),
-            "estimations": estimations
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            estimations = await storage.get_estimations_by_user(user_id)
+            return {
+                "userId": user_id,
+                "totalEstimations": len(estimations),
+                "estimations": estimations
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -265,8 +284,10 @@ async def get_project_stats(project_id: str):
     Получает статистику проекта
     """
     try:
-        stats = storage.get_project_stats(project_id)
-        return stats
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            stats = await storage.get_project_stats(project_id)
+            return stats
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -276,12 +297,14 @@ async def get_project_estimations(project_id: str):
     Получает все оценки проекта
     """
     try:
-        estimations = storage.get_estimations_by_project(project_id)
-        return {
-            "projectId": project_id,
-            "totalEstimations": len(estimations),
-            "estimations": estimations
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            estimations = await storage.get_estimations_by_project(project_id)
+            return {
+                "projectId": project_id,
+                "totalEstimations": len(estimations),
+                "estimations": estimations
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -291,12 +314,14 @@ async def get_team_estimations(team_id: str):
     Получает все оценки команды
     """
     try:
-        estimations = storage.get_estimations_by_team(team_id)
-        return {
-            "teamId": team_id,
-            "totalEstimations": len(estimations),
-            "estimations": estimations
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            estimations = await storage.get_estimations_by_team(team_id)
+            return {
+                "teamId": team_id,
+                "totalEstimations": len(estimations),
+                "estimations": estimations
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -306,10 +331,12 @@ async def get_estimation(card_id: str):
     Получает текущий статус и результаты оценки по ID карточки
     """
     try:
-        estimation = storage.get_estimation_by_card_id(card_id)
-        if not estimation:
-            raise HTTPException(status_code=404, detail="Оценка не найдена")
-        return estimation
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            estimation = await storage.get_estimation_by_card_id(card_id)
+            if not estimation:
+                raise HTTPException(status_code=404, detail="Оценка не найдена")
+            return estimation
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -319,8 +346,10 @@ async def get_estimation_history(card_id: str):
     Получает историю оценок для карточки
     """
     try:
-        history = storage.get_estimation_history(card_id)
-        return history
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            history = await storage.get_estimation_history(card_id)
+            return history
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -330,11 +359,13 @@ async def get_estimation_insights(card_id: str):
     Получает AI инсайты и рекомендации для оценки
     """
     try:
-        estimation = storage.get_estimation_by_card_id(card_id)
-        if not estimation:
-            raise HTTPException(status_code=404, detail="Оценка не найдена")
-        
-        insights = ai_estimator.get_estimation_insights(estimation)
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            estimation = await storage.get_estimation_by_card_id(card_id)
+            if not estimation:
+                raise HTTPException(status_code=404, detail="Оценка не найдена")
+            
+            insights = ai_estimator.get_estimation_insights(estimation)
         
         return EstimationInsights(
             accuracyScore=insights['accuracy_score'],
@@ -352,21 +383,24 @@ async def submit_feedback(card_id: str, feedback: EstimationFeedback):
     Отправляет обратную связь по оценке
     """
     try:
-        # Получаем estimation по card_id
-        estimation = storage.get_estimation_by_card_id(card_id)
-        if not estimation:
-            raise HTTPException(status_code=404, detail="Оценка не найдена")
-        
-        # Обновляем feedback с правильным estimation_id
-        feedback.estimationId = estimation.id
-        
-        # Добавляем feedback
-        added_feedback = storage.add_feedback(feedback)
-        
-        return {
-            "message": "Обратная связь добавлена",
-            "feedback": added_feedback
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            # Получаем estimation по card_id
+            estimation = await storage.get_estimation_by_card_id(card_id)
+            if not estimation:
+                raise HTTPException(status_code=404, detail="Оценка не найдена")
+            
+            # Обновляем feedback с правильным estimation_id
+            feedback.estimationId = estimation.id
+            
+            # Добавляем feedback
+            added_feedback = await storage.add_feedback(feedback)
+            
+            return {
+                "message": "Обратная связь добавлена",
+                "feedback": added_feedback
+            }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -377,23 +411,27 @@ async def refine_estimation(card_id: str, feedback: EstimationFeedback):
     Улучшает оценку на основе обратной связи
     """
     try:
-        # Получаем estimation по card_id
-        estimation = storage.get_estimation_by_card_id(card_id)
-        if not estimation:
-            raise HTTPException(status_code=404, detail="Оценка не найдена")
-        
-        # Обновляем feedback с правильным estimation_id
-        feedback.estimationId = estimation.id
-        
-        # Улучшаем оценку
-        refined_estimation = await ai_estimator.refine_estimation(
-            estimation.id, feedback.feedback
-        )
-        
-        return {
-            "message": "Оценка улучшена на основе обратной связи",
-            "estimation": refined_estimation
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            ai_estimator = AIEstimator(storage)
+            
+            # Получаем estimation по card_id
+            estimation = await storage.get_estimation_by_card_id(card_id)
+            if not estimation:
+                raise HTTPException(status_code=404, detail="Оценка не найдена")
+            
+            # Обновляем feedback с правильным estimation_id
+            feedback.estimationId = estimation.id
+            
+            # Улучшаем оценку
+            refined_estimation = await ai_estimator.refine_estimation(
+                estimation.id, feedback.feedback
+            )
+            
+            return {
+                "message": "Оценка улучшена на основе обратной связи",
+                "estimation": refined_estimation
+            }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -404,21 +442,24 @@ async def get_estimation_statistics(card_id: str):
     Получает статистику точности и распределения оценок
     """
     try:
-        # Получаем статистику точности
-        accuracy_stats = storage.get_accuracy_statistics(card_id)
-        
-        # Получаем распределение по сложности
-        complexity_dist = storage.get_complexity_distribution(card_id)
-        
-        # Получаем распределение по приоритету
-        priority_dist = storage.get_priority_distribution(card_id)
-        
-        return {
-            "cardId": card_id,
-            "accuracy": accuracy_stats,
-            "complexityDistribution": complexity_dist,
-            "priorityDistribution": priority_dist
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            # Получаем статистику точности
+            accuracy_stats = await storage.get_accuracy_statistics(card_id)
+            
+            # Получаем распределение по сложности
+            complexity_dist = await storage.get_complexity_distribution(card_id)
+            
+            # Получаем распределение по приоритету
+            priority_dist = await storage.get_priority_distribution(card_id)
+            
+            return {
+                "cardId": card_id,
+                "accuracy": accuracy_stats,
+                "complexityDistribution": complexity_dist,
+                "priorityDistribution": priority_dist
+            }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -438,40 +479,71 @@ async def trello_webhook(webhook: TrelloWebhook):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/v1/estimate/{card_id}/statistics")
+async def get_estimation_statistics(card_id: str):
+    """
+    Получает статистику точности и распределения оценок
+    """
+    try:
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            # Получаем статистику точности
+            accuracy_stats = await storage.get_accuracy_statistics(card_id)
+            
+            # Получаем распределение по сложности
+            complexity_dist = await storage.get_complexity_distribution(card_id)
+            
+            # Получаем распределение по приоритету
+            priority_dist = await storage.get_priority_distribution(card_id)
+            
+            return {
+                "cardId": card_id,
+                "accuracy": accuracy_stats,
+                "complexityDistribution": complexity_dist,
+                "priorityDistribution": priority_dist
+            }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/v1/trello/card/{card_id}/stats")
 async def get_trello_card_stats(card_id: str):
     """
     Получает детальную статистику по карточке Trello
     """
     try:
-        # Получаем основную оценку
-        estimation = storage.get_estimation_by_card_id(card_id)
-        if not estimation:
-            raise HTTPException(status_code=404, detail="Оценка не найдена")
-        
-        # Получаем историю
-        history = storage.get_estimation_history(card_id)
-        
-        # Получаем статистику точности
-        accuracy_stats = storage.get_accuracy_statistics(card_id)
-        
-        # Получаем распределения
-        complexity_dist = storage.get_complexity_distribution(card_id)
-        priority_dist = storage.get_priority_distribution(card_id)
-        
-        # Получаем feedback
-        feedback_list = storage.get_feedback_for_estimation(estimation.id)
-        
-        return {
-            "cardId": card_id,
-            "estimation": estimation,
-            "history": history,
-            "accuracy": accuracy_stats,
-            "complexityDistribution": complexity_dist,
-            "priorityDistribution": priority_dist,
-            "feedback": feedback_list,
-            "lastUpdated": datetime.now().isoformat()
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            # Получаем основную оценку
+            estimation = await storage.get_estimation_by_card_id(card_id)
+            if not estimation:
+                raise HTTPException(status_code=404, detail="Оценка не найдена")
+            
+            # Получаем историю
+            history = await storage.get_estimation_history(card_id)
+            
+            # Получаем статистику точности
+            accuracy_stats = await storage.get_accuracy_statistics(card_id)
+            
+            # Получаем распределения
+            complexity_dist = await storage.get_complexity_distribution(card_id)
+            priority_dist = await storage.get_priority_distribution(card_id)
+            
+            # Получаем feedback
+            feedback_list = await storage.get_feedback_for_estimation(estimation.id)
+            
+            return {
+                "cardId": card_id,
+                "estimation": estimation,
+                "history": history,
+                "accuracy": accuracy_stats,
+                "complexityDistribution": complexity_dist,
+                "priorityDistribution": priority_dist,
+                "feedback": feedback_list,
+                "lastUpdated": datetime.now().isoformat()
+            }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -503,34 +575,37 @@ async def estimate_trello_card(
         if request.complexity not in valid_complexities:
             raise HTTPException(status_code=400, detail=f"Неверная сложность. Допустимые значения: {', '.join(valid_complexities)}")
         
-        # Создаем запись в хранилище
-        estimation = storage.create_estimation(
-            card_id,
-            user_id=request.user_id,
-            team_id=request.team_id,
-            project_id=request.project_id
-        )
-        
-        # Запускаем оценку в фоновом режиме
-        background_tasks.add_task(
-            ai_estimator.estimate_trello_task,
-            card_id,
-            request.trello_card_data.dict() if request.trello_card_data else {},
-            request.repo_url,
-            request.priority,
-            request.complexity,
-            request.user_id,
-            request.team_id,
-            request.project_id
-        )
-        
-        return {
-            "status": "processing",
-            "message": "Оценка Trello карточки запущена",
-            "cardId": card_id,
-            "estimationId": estimation.id,
-            "estimatedCompletionTime": datetime.now().isoformat()
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            # Создаем запись в хранилище
+            estimation = await storage.create_estimation(
+                card_id,
+                user_id=request.user_id,
+                team_id=request.team_id,
+                project_id=request.project_id
+            )
+            
+            # Запускаем оценку в фоновом режиме
+            background_tasks.add_task(
+                _estimate_trello_task_background,
+                card_id,
+                request.trello_card_data.dict() if request.trello_card_data else {},
+                request.repo_url,
+                request.priority,
+                request.complexity,
+                request.user_id,
+                request.team_id,
+                request.project_id
+            )
+            
+            return {
+                "status": "processing",
+                "message": "Оценка Trello карточки запущена",
+                "cardId": card_id,
+                "estimationId": estimation.id,
+                "estimatedCompletionTime": datetime.now().isoformat()
+            }
         
     except HTTPException:
         raise
@@ -544,12 +619,16 @@ async def reestimate_trello_card(card_id: str, reason: str = "Запрос по�
     Переоценивает Trello карточку
     """
     try:
-        result = await ai_estimator.reestimate_trello_task(card_id, reason)
-        return {
-            "message": "Переоценка запущена",
-            "cardId": card_id,
-            "estimation": result
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            ai_estimator = AIEstimator(storage)
+            
+            result = await ai_estimator.reestimate_trello_task(card_id, reason)
+            return {
+                "message": "Переоценка запущена",
+                "cardId": card_id,
+                "estimation": result
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -559,21 +638,24 @@ async def update_trello_card_metadata(card_id: str, metadata: dict):
     Обновляет метаданные карточки Trello
     """
     try:
-        estimation = storage.get_estimation_by_card_id(card_id)
-        if not estimation:
-            raise HTTPException(status_code=404, detail="Оценка не найдена")
-        
-        # Обновляем метаданные
-        updated_estimation = storage.update_estimation(
-            estimation.id,
-            metadata={**estimation.metadata, **metadata}
-        )
-        
-        return {
-            "message": "Метаданные обновлены",
-            "cardId": card_id,
-            "metadata": updated_estimation.metadata
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            estimation = await storage.get_estimation_by_card_id(card_id)
+            if not estimation:
+                raise HTTPException(status_code=404, detail="Оценка не найдена")
+            
+            # Обновляем метаданные
+            updated_estimation = await storage.update_estimation(
+                estimation.id,
+                metadata={**estimation.metadata, **metadata}
+            )
+            
+            return {
+                "message": "Метаданные обновлены",
+                "cardId": card_id,
+                "metadata": updated_estimation.metadata
+            }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -584,38 +666,41 @@ async def get_trello_card_details(card_id: str):
     Получает детальную информацию о Trello карточке с оценкой
     """
     try:
-        # Получаем основную оценку
-        estimation = storage.get_estimation_by_card_id(card_id)
-        if not estimation:
-            raise HTTPException(status_code=404, detail="Оценка не найдена")
-        
-        # Получаем историю оценок
-        history = storage.get_estimation_history(card_id)
-        
-        # Получаем статистику точности
-        accuracy_stats = storage.get_accuracy_statistics(card_id)
-        
-        # Получаем распределения
-        complexity_dist = storage.get_complexity_distribution(card_id)
-        priority_dist = storage.get_priority_distribution(card_id)
-        
-        # Получаем feedback
-        feedback_list = storage.get_feedback_for_estimation(estimation.id)
-        
-        # Получаем метаданные карточки
-        card_metadata = estimation.metadata or {}
-        
-        return {
-            "cardId": card_id,
-            "estimation": estimation,
-            "history": history,
-            "accuracy": accuracy_stats,
-            "complexityDistribution": complexity_dist,
-            "priorityDistribution": priority_dist,
-            "feedback": feedback_list,
-            "cardMetadata": card_metadata,
-            "lastUpdated": datetime.now().isoformat()
-        }
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            # Получаем основную оценку
+            estimation = await storage.get_estimation_by_card_id(card_id)
+            if not estimation:
+                raise HTTPException(status_code=404, detail="Оценка не найдена")
+            
+            # Получаем историю оценок
+            history = await storage.get_estimation_history(card_id)
+            
+            # Получаем статистику точности
+            accuracy_stats = await storage.get_accuracy_statistics(card_id)
+            
+            # Получаем распределения
+            complexity_dist = await storage.get_complexity_distribution(card_id)
+            priority_dist = await storage.get_priority_distribution(card_id)
+            
+            # Получаем feedback
+            feedback_list = await storage.get_feedback_for_estimation(estimation.id)
+            
+            # Получаем метаданные карточки
+            card_metadata = estimation.metadata or {}
+            
+            return {
+                "cardId": card_id,
+                "estimation": estimation,
+                "history": history,
+                "accuracy": accuracy_stats,
+                "complexityDistribution": complexity_dist,
+                "priorityDistribution": priority_dist,
+                "feedback": feedback_list,
+                "cardMetadata": card_metadata,
+                "lastUpdated": datetime.now().isoformat()
+            }
         
     except HTTPException:
         raise
@@ -629,57 +714,60 @@ async def get_trello_board_stats(board_id: str):
     Получает статистику по доске Trello
     """
     try:
-        # Получаем все оценки для доски (по project_id)
-        estimations = storage.get_estimations_by_project(board_id)
-        
-        if not estimations:
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            
+            # Получаем все оценки для доски (по project_id)
+            estimations = await storage.get_estimations_by_project(board_id)
+            
+            if not estimations:
+                return {
+                    "boardId": board_id,
+                    "totalCards": 0,
+                    "totalEstimatedHours": 0,
+                    "averageAccuracy": 0,
+                    "complexityBreakdown": {},
+                    "priorityBreakdown": {},
+                    "recentEstimations": []
+                }
+            
+            # Вычисляем статистику
+            total_hours = sum(est.estimatedHours or 0 for est in estimations)
+            completed_estimations = [est for est in estimations if est.status == "completed"]
+            
+            # Разбивка по сложности
+            complexity_breakdown = {}
+            for est in estimations:
+                if est.metadata and 'complexity' in est.metadata:
+                    complexity = est.metadata['complexity']
+                    complexity_breakdown[complexity] = complexity_breakdown.get(complexity, 0) + 1
+            
+            # Разбивка по приоритету
+            priority_breakdown = {}
+            for est in estimations:
+                if est.metadata and 'priority' in est.metadata:
+                    priority = est.metadata['priority']
+                    priority_breakdown[priority] = priority_breakdown.get(priority, 0) + 1
+            
+            # Последние оценки
+            recent_estimations = sorted(
+                estimations, 
+                key=lambda x: x.createdAt, 
+                reverse=True
+            )[:10]
+            
             return {
                 "boardId": board_id,
-                "totalCards": 0,
-                "totalEstimatedHours": 0,
-                "averageAccuracy": 0,
-                "complexityBreakdown": {},
-                "priorityBreakdown": {},
-                "recentEstimations": []
+                "totalCards": len(estimations),
+                "totalEstimatedHours": round(total_hours, 2),
+                "averageAccuracy": round(
+                    sum(est.confidence or 0 for est in estimations) / len(estimations), 2
+                ) if estimations else 0,
+                "complexityBreakdown": complexity_breakdown,
+                "priorityBreakdown": priority_breakdown,
+                "recentEstimations": recent_estimations,
+                "lastUpdated": datetime.now().isoformat()
             }
-        
-        # Вычисляем статистику
-        total_hours = sum(est.estimatedHours or 0 for est in estimations)
-        completed_estimations = [est for est in estimations if est.status == EstimationStatus.COMPLETED]
-        
-        # Разбивка по сложности
-        complexity_breakdown = {}
-        for est in estimations:
-            if est.metadata and 'complexity' in est.metadata:
-                complexity = est.metadata['complexity']
-                complexity_breakdown[complexity] = complexity_breakdown.get(complexity, 0) + 1
-        
-        # Разбивка по приоритету
-        priority_breakdown = {}
-        for est in estimations:
-            if est.metadata and 'priority' in est.metadata:
-                priority = est.metadata['priority']
-                priority_breakdown[priority] = priority_breakdown.get(priority, 0) + 1
-        
-        # Последние оценки
-        recent_estimations = sorted(
-            estimations, 
-            key=lambda x: x.createdAt, 
-            reverse=True
-        )[:10]
-        
-        return {
-            "boardId": board_id,
-            "totalCards": len(estimations),
-            "totalEstimatedHours": round(total_hours, 2),
-            "averageAccuracy": round(
-                sum(est.confidence or 0 for est in estimations) / len(estimations), 2
-            ) if estimations else 0,
-            "complexityBreakdown": complexity_breakdown,
-            "priorityBreakdown": priority_breakdown,
-            "recentEstimations": recent_estimations,
-            "lastUpdated": datetime.now().isoformat()
-        }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -813,15 +901,15 @@ async def _handle_attachment_added(card_id: str, data: dict):
         # GitHub вложение - возможно, стоит переоценить задачу
         estimation = storage.get_estimation_by_card_id(card_id)
         if estimation:
-            metadata = estimation.metadata or {}
-            metadata['github_attachments'] = metadata.get('github_attachments', [])
-            metadata['github_attachments'].append({
+            task_metadata = estimation.task_metadata or {}
+            task_metadata['github_attachments'] = task_metadata.get('github_attachments', [])
+            task_metadata['github_attachments'].append({
                 'url': attachment.get('url'),
                 'name': attachment.get('name'),
                 'added_at': datetime.now().isoformat()
             })
             
-            storage.update_estimation(estimation.id, metadata=metadata)
+            storage.update_estimation(estimation.id, task_metadata=task_metadata)
 
 async def _handle_comment_added(card_id: str, data: dict):
     """Обрабатывает добавление комментария"""
@@ -830,14 +918,14 @@ async def _handle_comment_added(card_id: str, data: dict):
         # Комментарий связан с оценкой
         estimation = storage.get_estimation_by_card_id(card_id)
         if estimation:
-            metadata = estimation.metadata or {}
-            metadata['estimation_comments'] = metadata.get('estimation_comments', [])
-            metadata['estimation_comments'].append({
+            task_metadata = estimation.task_metadata or {}
+            task_metadata['estimation_comments'] = task_metadata.get('estimation_comments', [])
+            task_metadata['estimation_comments'].append({
                 'text': comment,
                 'added_at': datetime.now().isoformat()
             })
             
-            storage.update_estimation(estimation.id, metadata=metadata)
+            storage.update_estimation(estimation.id, task_metadata=task_metadata)
 
 # Debug endpoints
 @app.get("/api/v1/debug/estimations")
@@ -867,6 +955,35 @@ async def cleanup_old_estimations(days_old: int = 90):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+async def _estimate_task_background(card_id: str, task_description: str, repo_url: str,
+                                   priority: str, complexity: str, user_id: Optional[str] = None,
+                                   team_id: Optional[str] = None, project_id: Optional[str] = None):
+    """Фоновая задача для оценки задачи"""
+    try:
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            ai_estimator = AIEstimator(storage)
+            
+            await ai_estimator.estimate_task(
+                card_id, task_description, repo_url, priority, complexity,
+                user_id, team_id, project_id
+            )
+    except Exception as e:
+        # Логируем ошибку
+        print(f"Ошибка в фоновой оценке задачи {card_id}: {e}")
+
+async def _estimate_batch_tasks_background(batch_request):
+    """Фоновая задача для batch estimation"""
+    try:
+        async for session in get_db_session():
+            storage = PostgreSQLStorage(session)
+            ai_estimator = AIEstimator(storage)
+            
+            await ai_estimator.estimate_batch_tasks(batch_request)
+    except Exception as e:
+        # Логируем ошибку
+        print(f"Ошибка в фоновой batch оценке: {e}")
 
 if __name__ == "__main__":
     import uvicorn

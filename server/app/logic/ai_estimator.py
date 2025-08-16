@@ -1,17 +1,18 @@
 import os
 import asyncio
 import re
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 import openai
 from ..models.estimation import (
     EstimationResult, EstimationStatus, EstimationRequest, 
     BatchEstimationRequest, UserPerformanceUpdate
 )
 from ..db.storage import InMemoryStorage
+from ..db.postgres_storage import PostgreSQLStorage
 from datetime import datetime
 
 class AIEstimator:
-    def __init__(self, storage: InMemoryStorage):
+    def __init__(self, storage: Union[InMemoryStorage, PostgreSQLStorage]):
         self.storage = storage
         self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.model = os.getenv("OPENAI_MODEL", "gpt-4")
@@ -22,9 +23,14 @@ class AIEstimator:
                            project_id: Optional[str] = None, batch_id: Optional[str] = None) -> EstimationResult:
         """Асинхронно оценивает задачу с помощью AI"""
         # Создаем запись в хранилище
-        estimation = self.storage.create_estimation(
-            card_id, user_id, team_id, project_id, batch_id
-        )
+        if hasattr(self.storage, 'create_estimation') and asyncio.iscoroutinefunction(self.storage.create_estimation):
+            estimation = await self.storage.create_estimation(
+                card_id, user_id, team_id, project_id, batch_id
+            )
+        else:
+            estimation = self.storage.create_estimation(
+                card_id, user_id, team_id, project_id, batch_id
+            )
         
         try:
             # Формируем промпт для AI с учетом истории пользователя
@@ -39,41 +45,75 @@ class AIEstimator:
             estimation_data = self._parse_estimation_response(response)
             
             # Обновляем запись
-            self.storage.update_estimation(
-                estimation.id,
-                status=EstimationStatus.ESTIMATED,
-                estimatedHours=estimation_data['estimated_hours'],
-                confidence=estimation_data.get('confidence', 80),
-                reasoning=estimation_data.get('reasoning', ''),
-                breakdown=estimation_data.get('breakdown', {}),
-                metadata={
-                    'priority': priority,
-                    'complexity': complexity,
-                    'repo_url': repo_url,
-                    'ai_model': self.model
-                }
-            )
+            if hasattr(self.storage, 'update_estimation') and asyncio.iscoroutinefunction(self.storage.update_estimation):
+                await self.storage.update_estimation(
+                    estimation.id,
+                    status=EstimationStatus.ESTIMATED,
+                    estimatedHours=estimation_data['estimated_hours'],
+                    confidence=estimation_data.get('confidence', 80),
+                    reasoning=estimation_data.get('reasoning', ''),
+                    breakdown=estimation_data.get('breakdown', {}),
+                    task_metadata={
+                        'priority': priority,
+                        'complexity': complexity,
+                        'repo_url': repo_url,
+                        'ai_model': self.model
+                    }
+                )
+            else:
+                self.storage.update_estimation(
+                    estimation.id,
+                    status=EstimationStatus.ESTIMATED,
+                    estimatedHours=estimation_data['estimated_hours'],
+                    confidence=estimation_data.get('confidence', 80),
+                    reasoning=estimation_data.get('reasoning', ''),
+                    breakdown=estimation_data.get('breakdown', {}),
+                    task_metadata={
+                        'priority': priority,
+                        'complexity': complexity,
+                        'repo_url': repo_url,
+                        'ai_model': self.model
+                    }
+                )
             
-            return self.storage.get_estimation_by_card_id(card_id)
+            if hasattr(self.storage, 'get_estimation_by_card_id') and asyncio.iscoroutinefunction(self.storage.get_estimation_by_card_id):
+                return await self.storage.get_estimation_by_card_id(card_id)
+            else:
+                return self.storage.get_estimation_by_card_id(card_id)
             
         except Exception as e:
             # В случае ошибки обновляем статус
-            self.storage.update_estimation(
-                estimation.id,
-                status=EstimationStatus.FAILED,
-                error=str(e)
-            )
+            if hasattr(self.storage, 'update_estimation') and asyncio.iscoroutinefunction(self.storage.update_estimation):
+                await self.storage.update_estimation(
+                    estimation.id,
+                    status=EstimationStatus.FAILED,
+                    error=str(e)
+                )
+            else:
+                self.storage.update_estimation(
+                    estimation.id,
+                    status=EstimationStatus.FAILED,
+                    error=str(e)
+                )
             raise
     
     async def estimate_batch_tasks(self, batch_request: BatchEstimationRequest) -> str:
         """Оценивает множество задач в batch режиме"""
         # Создаем batch estimation
-        batch = self.storage.create_batch_estimation(
-            batch_request.tasks,
-            batch_request.userId,
-            batch_request.teamId,
-            batch_request.projectId
-        )
+        if hasattr(self.storage, 'create_batch_estimation') and asyncio.iscoroutinefunction(self.storage.create_batch_estimation):
+            batch = await self.storage.create_batch_estimation(
+                batch_request.tasks,
+                batch_request.userId,
+                batch_request.teamId,
+                batch_request.projectId
+            )
+        else:
+            batch = self.storage.create_batch_estimation(
+                batch_request.tasks,
+                batch_request.userId,
+                batch_request.teamId,
+                batch_request.projectId
+            )
         
         # Запускаем асинхронную обработку
         asyncio.create_task(self._process_batch_estimation(batch.batchId, batch_request))

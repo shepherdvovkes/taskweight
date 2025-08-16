@@ -1,13 +1,13 @@
 import os
 import asyncio
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, MetaData, text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import StaticPool
 from dotenv import load_dotenv
 
 # Загружаем переменные окружения
-load_dotenv()
+load_dotenv("config.env")
 
 # Настройки подключения к базе данных
 DATABASE_URL = os.getenv(
@@ -68,7 +68,7 @@ def check_db_connection():
     """Проверяет подключение к базе данных"""
     try:
         with engine.connect() as conn:
-            result = conn.execute("SELECT 1")
+            result = conn.execute(text("SELECT 1"))
             return True
     except Exception as e:
         print(f"Ошибка подключения к базе данных: {e}")

@@ -1,0 +1,129 @@
+### TaskWeight API Examples
+### Use with VS Code REST Client extension or similar tools
+
+### Health Check
+GET http://localhost:8000/health
+
+### Root endpoint
+GET http://localhost:8000/
+
+### Estimate a single task
+POST http://localhost:8000/api/v1/estimate
+Content-Type: application/json
+
+{
+  "cardId": "trello_card_001",
+  "taskDescription": "Implement user authentication system with JWT tokens",
+  "repoUrl": "https://github.com/taskweight/auth-service",
+  "priority": "high",
+  "complexity": "complex",
+  "userId": "550e8400-e29b-41d4-a716-446655440001",
+  "teamId": "team_frontend",
+  "projectId": "550e8400-e29b-41d4-a716-446655440010"
+}
+
+### Estimate batch of tasks
+POST http://localhost:8000/api/v1/estimate/batch
+Content-Type: application/json
+
+{
+  "tasks": [
+    {
+      "cardId": "trello_card_001",
+      "taskDescription": "Setup database schema",
+      "repoUrl": "https://github.com/taskweight/database"
+    },
+    {
+      "cardId": "trello_card_002", 
+      "taskDescription": "Create REST API endpoints",
+      "repoUrl": "https://github.com/taskweight/api"
+    }
+  ],
+  "userId": "550e8400-e29b-41d4-a716-446655440001",
+  "teamId": "team_backend",
+  "projectId": "550e8400-e29b-41d4-a716-446655440010"
+}
+
+### Get estimation result
+GET http://localhost:8000/api/v1/estimate/trello_card_001
+
+### Get batch status
+GET http://localhost:8000/api/v1/estimate/batch/batch_123
+
+### Submit feedback for estimation
+POST http://localhost:8000/api/v1/estimate/trello_card_001/feedback
+Content-Type: application/json
+
+{
+  "feedback": "Estimation was accurate, task took exactly 8 hours as predicted",
+  "actualHours": 8.0,
+  "accuracy": 95,
+  "difficulty": 4,
+  "blockers": ["API documentation was incomplete"],
+  "notes": "Good estimation, would use again"
+}
+
+### Get user performance stats
+GET http://localhost:8000/api/v1/users/550e8400-e29b-41d4-a716-446655440001/performance
+
+### Get project statistics
+GET http://localhost:8000/api/v1/projects/550e8400-e29b-41d4-a716-446655440010/stats
+
+### Get team estimations
+GET http://localhost:8000/api/v1/teams/team_backend/estimations
+
+### Get estimation history
+GET http://localhost:8000/api/v1/estimate/trello_card_001/history
+
+### Get estimation insights
+GET http://localhost:8000/api/v1/estimate/trello_card_001/insights
+
+### Refine estimation
+POST http://localhost:8000/api/v1/estimate/trello_card_001/refine
+Content-Type: application/json
+
+{
+  "feedback": "Need to account for additional testing requirements",
+  "actualHours": 10.0,
+  "accuracy": 80,
+  "difficulty": 4,
+  "notes": "Add 2 hours for comprehensive testing"
+}
+
+### Trello specific endpoints
+
+### Estimate Trello card
+POST http://localhost:8000/api/v1/trello/card/trello_card_001/estimate
+Content-Type: application/json
+
+{
+  "taskDescription": "Implement user authentication system",
+  "priority": "high",
+  "complexity": "complex"
+}
+
+### Get Trello card stats
+GET http://localhost:8000/api/v1/trello/card/trello_card_001/stats
+
+### Get Trello board stats
+GET http://localhost:8000/api/v1/trello/board/board_123/stats
+
+### Estimate all cards in Trello board
+POST http://localhost:8000/api/v1/trello/board/board_123/estimate-batch
+Content-Type: application/json
+
+{
+  "filters": {
+    "status": "todo",
+    "priority": "high"
+  },
+  "userId": "550e8400-e29b-41d4-a716-446655440001"
+}
+
+### Debug endpoints
+
+### Get all estimations
+GET http://localhost:8000/api/v1/debug/estimations
+
+### Cleanup old estimations
+POST http://localhost:8000/api/v1/debug/cleanup?days_old=90

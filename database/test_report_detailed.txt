@@ -1,0 +1,786 @@
+TaskWeight Database Test Report
+==================================================
+
+Дата: 2025-08-10 11:56:02
+
+Тест: Основные тесты базы данных
+Статус: ОШИБКА
+Время: 2.89 секунд
+Тип: обычный
+Вывод:
+❌ Ошибка подключения к PostgreSQL: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+
+❌ Не удалось подключиться к PostgreSQL
+
+------------------------------
+
+Тест: Расширенные тесты производительности
+Статус: ОШИБКА
+Время: 0.26 секунд
+Тип: обычный
+Вывод:
+❌ Ошибка подключения к PostgreSQL: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+
+❌ Не удалось подключиться к PostgreSQL
+
+------------------------------
+
+Тест: Комплексные тесты функциональности
+Статус: ОШИБКА
+Время: 0.19 секунд
+Тип: обычный
+Вывод:
+🚀 Запуск комплексных тестов базы данных...
+❌ Ошибка подключения к PostgreSQL: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "taskweight_user" does not exist
+
+
+================================================================================
+📊 КОМПЛЕКСНЫЙ ОТЧЕТ ПО ТЕСТИРОВАНИЮ БАЗЫ ДАННЫХ
+================================================================================
+
+📈 Общая статистика:
+   Всего тестов: 1
+   Пройдено: 0
+   Провалено: 1
+   Процент успеха: 0.0%
+
+✅ Пройденные тесты:
+
+❌ Проваленные тесты:
+   • connection
+
+⏱️  Детальная информация по времени:
+
+🎯 Рекомендации:
+   ⚠️  Необходимо исправить 1 проваленных тестов.
+   🔧 Проверьте логи и настройки базы данных.
+================================================================================
+
+❌ Некоторые тесты провалены!
+
+------------------------------
+
+Тест: Тесты интеграций и бизнес-логики
+Статус: ОШИБКА
+Время: 0.62 секунд
+Тип: обычный
+Вывод:
+🚀 Запуск тестов интеграций и бизнес-логики...
+❌ Ошибка подключения к PostgreSQL: connection to server at "localhost" (::1), port 5432 failed: FATAL:  role "taskweight_user" does not exist
+
+
+================================================================================
+📊 ОТЧЕТ ПО ТЕСТИРОВАНИЮ ИНТЕГРАЦИЙ И БИЗНЕС-ЛОГИКИ
+================================================================================
+
+📈 Общая статистика:
+   Всего тестов: 1
+   Пройдено: 0
+   Провалено: 1
+   Процент успеха: 0.0%
+
+✅ Пройденные тесты:
+
+❌ Проваленные тесты:
+   • connection
+
+⏱️  Детальная информация по времени:
+
+🎯 Рекомендации:
+   ⚠️  Необходимо исправить 1 проваленных тестов.
+   🔧 Проверьте настройки интеграций и webhook'ов.
+================================================================================
+
+❌ Некоторые тесты интеграций провалены!
+
+------------------------------
+
+Тест: Современные pytest тесты
+Статус: ОШИБКА
+Время: 1.75 секунд
+Тип: pytest
+Вывод:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/vovkes/taskweight/database/venv/bin/python
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/vovkes/taskweight/database
+configfile: pytest.ini
+plugins: Faker-37.5.3, xdist-3.8.0, cov-6.2.1, benchmark-5.1.0
+collecting ... collected 20 items
+
+test_pytest_database.py::TestDatabaseStructure::test_database_connection ERROR [  5%]
+test_pytest_database.py::TestDatabaseStructure::test_required_tables_exist ERROR [ 10%]
+test_pytest_database.py::TestDatabaseStructure::test_table_columns ERROR [ 15%]
+test_pytest_database.py::TestDatabaseStructure::test_extensions ERROR    [ 20%]
+test_pytest_database.py::TestDatabaseFunctions::test_uuid_generation ERROR [ 25%]
+test_pytest_database.py::TestDatabaseFunctions::test_custom_functions ERROR [ 30%]
+test_pytest_database.py::TestDatabaseFunctions::test_triggers ERROR      [ 35%]
+test_pytest_database.py::TestDataOperations::test_insert_user ERROR      [ 40%]
+test_pytest_database.py::TestDataOperations::test_project_creation ERROR [ 45%]
+test_pytest_database.py::TestDataOperations::test_task_workflow ERROR    [ 50%]
+test_pytest_database.py::TestConstraintsAndIntegrity::test_foreign_key_constraints ERROR [ 55%]
+test_pytest_database.py::TestConstraintsAndIntegrity::test_unique_constraints ERROR [ 60%]
+test_pytest_database.py::TestConstraintsAndIntegrity::test_not_null_constraints ERROR [ 65%]
+test_pytest_database.py::TestPerformance::test_query_performance ERROR   [ 70%]
+test_pytest_database.py::TestPerformance::test_index_usage ERROR         [ 75%]
+test_pytest_database.py::TestRedisIntegration::test_redis_connection ERROR [ 80%]
+test_pytest_database.py::TestRedisIntegration::test_redis_operations ERROR [ 85%]
+test_pytest_database.py::TestRedisIntegration::test_redis_cache_pattern ERROR [ 90%]
+test_pytest_database.py::TestDataValidation::test_email_format_validation ERROR [ 95%]
+test_pytest_database.py::TestDataValidation::test_numeric_constraints ERROR [100%]
+
+==================================== ERRORS ====================================
+_______ ERROR at setup of TestDatabaseStructure.test_database_connection _______
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______ ERROR at setup of TestDatabaseStructure.test_required_tables_exist ______
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+__________ ERROR at setup of TestDatabaseStructure.test_table_columns __________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+___________ ERROR at setup of TestDatabaseStructure.test_extensions ____________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_________ ERROR at setup of TestDatabaseFunctions.test_uuid_generation _________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+________ ERROR at setup of TestDatabaseFunctions.test_custom_functions _________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+____________ ERROR at setup of TestDatabaseFunctions.test_triggers _____________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+____________ ERROR at setup of TestDataOperations.test_insert_user _____________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+__________ ERROR at setup of TestDataOperations.test_project_creation __________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+___________ ERROR at setup of TestDataOperations.test_task_workflow ____________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+__ ERROR at setup of TestConstraintsAndIntegrity.test_foreign_key_constraints __
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+____ ERROR at setup of TestConstraintsAndIntegrity.test_unique_constraints _____
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+___ ERROR at setup of TestConstraintsAndIntegrity.test_not_null_constraints ____
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+___________ ERROR at setup of TestPerformance.test_query_performance ___________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______________ ERROR at setup of TestPerformance.test_index_usage ______________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_________ ERROR at setup of TestRedisIntegration.test_redis_connection _________
+conftest.py:62: in redis_connection
+    conn.ping()
+venv/lib/python3.13/site-packages/redis/commands/core.py:1219: in ping
+    return self.execute_command("PING", **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/client.py:621: in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/client.py:627: in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/utils.py:195: in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/connection.py:1533: in get_connection
+    connection.connect()
+venv/lib/python3.13/site-packages/redis/connection.py:380: in connect
+    self.connect_check_health(check_health=True)
+venv/lib/python3.13/site-packages/redis/connection.py:403: in connect_check_health
+    self.on_connect_check_health(check_health=check_health)
+venv/lib/python3.13/site-packages/redis/connection.py:475: in on_connect_check_health
+    auth_response = self.read_response()
+                    ^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/connection.py:650: in read_response
+    response = self._parser.read_response(disable_decoding=disable_decoding)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/_parsers/resp2.py:15: in read_response
+    result = self._read_response(disable_decoding=disable_decoding)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/_parsers/resp2.py:38: in _read_response
+    raise error
+E   redis.exceptions.AuthenticationError: invalid username-password pair or user is disabled.
+_________ ERROR at setup of TestRedisIntegration.test_redis_operations _________
+conftest.py:62: in redis_connection
+    conn.ping()
+venv/lib/python3.13/site-packages/redis/commands/core.py:1219: in ping
+    return self.execute_command("PING", **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/client.py:621: in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/client.py:627: in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/utils.py:195: in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/connection.py:1533: in get_connection
+    connection.connect()
+venv/lib/python3.13/site-packages/redis/connection.py:380: in connect
+    self.connect_check_health(check_health=True)
+venv/lib/python3.13/site-packages/redis/connection.py:403: in connect_check_health
+    self.on_connect_check_health(check_health=check_health)
+venv/lib/python3.13/site-packages/redis/connection.py:475: in on_connect_check_health
+    auth_response = self.read_response()
+                    ^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/connection.py:650: in read_response
+    response = self._parser.read_response(disable_decoding=disable_decoding)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/_parsers/resp2.py:15: in read_response
+    result = self._read_response(disable_decoding=disable_decoding)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/_parsers/resp2.py:38: in _read_response
+    raise error
+E   redis.exceptions.AuthenticationError: invalid username-password pair or user is disabled.
+_______ ERROR at setup of TestRedisIntegration.test_redis_cache_pattern ________
+conftest.py:62: in redis_connection
+    conn.ping()
+venv/lib/python3.13/site-packages/redis/commands/core.py:1219: in ping
+    return self.execute_command("PING", **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/client.py:621: in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/client.py:627: in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/utils.py:195: in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/connection.py:1533: in get_connection
+    connection.connect()
+venv/lib/python3.13/site-packages/redis/connection.py:380: in connect
+    self.connect_check_health(check_health=True)
+venv/lib/python3.13/site-packages/redis/connection.py:403: in connect_check_health
+    self.on_connect_check_health(check_health=check_health)
+venv/lib/python3.13/site-packages/redis/connection.py:475: in on_connect_check_health
+    auth_response = self.read_response()
+                    ^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/connection.py:650: in read_response
+    response = self._parser.read_response(disable_decoding=disable_decoding)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/_parsers/resp2.py:15: in read_response
+    result = self._read_response(disable_decoding=disable_decoding)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv/lib/python3.13/site-packages/redis/_parsers/resp2.py:38: in _read_response
+    raise error
+E   redis.exceptions.AuthenticationError: invalid username-password pair or user is disabled.
+______ ERROR at setup of TestDataValidation.test_email_format_validation _______
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+________ ERROR at setup of TestDataValidation.test_numeric_constraints _________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+=============================== warnings summary ===============================
+test_pytest_database.py:15
+  /Users/vovkes/taskweight/database/test_pytest_database.py:15: PytestUnknownMarkWarning: Unknown pytest.mark.database - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = pytest.mark.database
+
+test_pytest_database.py:264
+  /Users/vovkes/taskweight/database/test_pytest_database.py:264: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+test_pytest_database.py:274
+  /Users/vovkes/taskweight/database/test_pytest_database.py:274: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR test_pytest_database.py::TestDatabaseStructure::test_database_connection
+ERROR test_pytest_database.py::TestDatabaseStructure::test_required_tables_exist
+ERROR test_pytest_database.py::TestDatabaseStructure::test_table_columns - ps...
+ERROR test_pytest_database.py::TestDatabaseStructure::test_extensions - psyco...
+ERROR test_pytest_database.py::TestDatabaseFunctions::test_uuid_generation - ...
+ERROR test_pytest_database.py::TestDatabaseFunctions::test_custom_functions
+ERROR test_pytest_database.py::TestDatabaseFunctions::test_triggers - psycopg...
+ERROR test_pytest_database.py::TestDataOperations::test_insert_user - psycopg...
+ERROR test_pytest_database.py::TestDataOperations::test_project_creation - ps...
+ERROR test_pytest_database.py::TestDataOperations::test_task_workflow - psyco...
+ERROR test_pytest_database.py::TestConstraintsAndIntegrity::test_foreign_key_constraints
+ERROR test_pytest_database.py::TestConstraintsAndIntegrity::test_unique_constraints
+ERROR test_pytest_database.py::TestConstraintsAndIntegrity::test_not_null_constraints
+ERROR test_pytest_database.py::TestPerformance::test_query_performance - psyc...
+ERROR test_pytest_database.py::TestPerformance::test_index_usage - psycopg2.O...
+ERROR test_pytest_database.py::TestRedisIntegration::test_redis_connection - ...
+ERROR test_pytest_database.py::TestRedisIntegration::test_redis_operations - ...
+ERROR test_pytest_database.py::TestRedisIntegration::test_redis_cache_pattern
+ERROR test_pytest_database.py::TestDataValidation::test_email_format_validation
+ERROR test_pytest_database.py::TestDataValidation::test_numeric_constraints
+======================== 3 warnings, 20 errors in 0.48s ========================
+
+------------------------------
+
+Тест: Тесты миграций и схемы
+Статус: ОШИБКА
+Время: 1.26 секунд
+Тип: pytest
+Вывод:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/vovkes/taskweight/database/venv/bin/python
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/vovkes/taskweight/database
+configfile: pytest.ini
+plugins: Faker-37.5.3, xdist-3.8.0, cov-6.2.1, benchmark-5.1.0
+collecting ... collected 18 items
+
+test_migrations.py::TestDatabaseMigrations::test_migration_files_exist PASSED [  5%]
+test_migrations.py::TestDatabaseMigrations::test_migration_sql_syntax ERROR [ 11%]
+test_migrations.py::TestDatabaseMigrations::test_function_signatures ERROR [ 16%]
+test_migrations.py::TestSchemaConstraints::test_primary_keys ERROR       [ 22%]
+test_migrations.py::TestSchemaConstraints::test_foreign_key_relationships ERROR [ 27%]
+test_migrations.py::TestSchemaConstraints::test_check_constraints ERROR  [ 33%]
+test_migrations.py::TestSchemaConstraints::test_unique_constraints ERROR [ 38%]
+test_migrations.py::TestIndexes::test_required_indexes ERROR             [ 44%]
+test_migrations.py::TestIndexes::test_index_types ERROR                  [ 50%]
+test_migrations.py::TestIndexes::test_partial_indexes ERROR              [ 55%]
+test_migrations.py::TestViews::test_view_definitions ERROR               [ 61%]
+test_migrations.py::TestViews::test_view_data_access ERROR               [ 66%]
+test_migrations.py::TestViews::test_view_performance ERROR               [ 72%]
+test_migrations.py::TestTriggers::test_trigger_existence ERROR           [ 77%]
+test_migrations.py::TestTriggers::test_trigger_functionality ERROR       [ 83%]
+test_migrations.py::TestDataTypes::test_uuid_columns ERROR               [ 88%]
+test_migrations.py::TestDataTypes::test_timestamp_columns ERROR          [ 94%]
+test_migrations.py::TestDataTypes::test_text_columns ERROR               [100%]
+
+==================================== ERRORS ====================================
+______ ERROR at setup of TestDatabaseMigrations.test_migration_sql_syntax ______
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______ ERROR at setup of TestDatabaseMigrations.test_function_signatures _______
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+__________ ERROR at setup of TestSchemaConstraints.test_primary_keys ___________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+____ ERROR at setup of TestSchemaConstraints.test_foreign_key_relationships ____
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+________ ERROR at setup of TestSchemaConstraints.test_check_constraints ________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_______ ERROR at setup of TestSchemaConstraints.test_unique_constraints ________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_____________ ERROR at setup of TestIndexes.test_required_indexes ______________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+________________ ERROR at setup of TestIndexes.test_index_types ________________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______________ ERROR at setup of TestIndexes.test_partial_indexes ______________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______________ ERROR at setup of TestViews.test_view_definitions _______________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______________ ERROR at setup of TestViews.test_view_data_access _______________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______________ ERROR at setup of TestViews.test_view_performance _______________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+____________ ERROR at setup of TestTriggers.test_trigger_existence _____________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+__________ ERROR at setup of TestTriggers.test_trigger_functionality ___________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______________ ERROR at setup of TestDataTypes.test_uuid_columns _______________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+____________ ERROR at setup of TestDataTypes.test_timestamp_columns ____________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______________ ERROR at setup of TestDataTypes.test_text_columns _______________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+=============================== warnings summary ===============================
+test_migrations.py:12
+  /Users/vovkes/taskweight/database/test_migrations.py:12: PytestUnknownMarkWarning: Unknown pytest.mark.database - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = pytest.mark.database
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR test_migrations.py::TestDatabaseMigrations::test_migration_sql_syntax
+ERROR test_migrations.py::TestDatabaseMigrations::test_function_signatures - ...
+ERROR test_migrations.py::TestSchemaConstraints::test_primary_keys - psycopg2...
+ERROR test_migrations.py::TestSchemaConstraints::test_foreign_key_relationships
+ERROR test_migrations.py::TestSchemaConstraints::test_check_constraints - psy...
+ERROR test_migrations.py::TestSchemaConstraints::test_unique_constraints - ps...
+ERROR test_migrations.py::TestIndexes::test_required_indexes - psycopg2.Opera...
+ERROR test_migrations.py::TestIndexes::test_index_types - psycopg2.Operationa...
+ERROR test_migrations.py::TestIndexes::test_partial_indexes - psycopg2.Operat...
+ERROR test_migrations.py::TestViews::test_view_definitions - psycopg2.Operati...
+ERROR test_migrations.py::TestViews::test_view_data_access - psycopg2.Operati...
+ERROR test_migrations.py::TestViews::test_view_performance - psycopg2.Operati...
+ERROR test_migrations.py::TestTriggers::test_trigger_existence - psycopg2.Ope...
+ERROR test_migrations.py::TestTriggers::test_trigger_functionality - psycopg2...
+ERROR test_migrations.py::TestDataTypes::test_uuid_columns - psycopg2.Operati...
+ERROR test_migrations.py::TestDataTypes::test_timestamp_columns - psycopg2.Op...
+ERROR test_migrations.py::TestDataTypes::test_text_columns - psycopg2.Operati...
+=================== 1 passed, 1 warning, 17 errors in 0.30s ====================
+
+------------------------------
+
+Тест: Тесты безопасности и производительности
+Статус: ОШИБКА
+Время: 1.98 секунд
+Тип: pytest
+Вывод:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/vovkes/taskweight/database/venv/bin/python
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/vovkes/taskweight/database
+configfile: pytest.ini
+plugins: Faker-37.5.3, xdist-3.8.0, cov-6.2.1, benchmark-5.1.0
+collecting ... collected 16 items
+
+test_security_performance.py::TestDatabaseSecurity::test_password_hashing ERROR [  6%]
+test_security_performance.py::TestDatabaseSecurity::test_sql_injection_prevention ERROR [ 12%]
+test_security_performance.py::TestDatabaseSecurity::test_user_permissions ERROR [ 18%]
+test_security_performance.py::TestDatabaseSecurity::test_audit_logging ERROR [ 25%]
+test_security_performance.py::TestDatabaseSecurity::test_data_encryption ERROR [ 31%]
+test_security_performance.py::TestDatabasePerformance::test_query_execution_time ERROR [ 37%]
+test_security_performance.py::TestDatabasePerformance::test_index_effectiveness ERROR [ 43%]
+test_security_performance.py::TestDatabasePerformance::test_connection_pooling FAILED [ 50%]
+test_security_performance.py::TestDatabasePerformance::test_concurrent_queries ERROR [ 56%]
+test_security_performance.py::TestDatabasePerformance::test_memory_usage ERROR [ 62%]
+test_security_performance.py::TestDatabasePerformance::test_vacuum_effectiveness ERROR [ 68%]
+test_security_performance.py::TestStressTesting::test_heavy_load ERROR   [ 75%]
+test_security_performance.py::TestStressTesting::test_concurrent_writes ERROR [ 81%]
+test_security_performance.py::TestMonitoringAndMetrics::test_performance_metrics_collection ERROR [ 87%]
+test_security_performance.py::TestMonitoringAndMetrics::test_system_statistics ERROR [ 93%]
+test_security_performance.py::TestMonitoringAndMetrics::test_lock_monitoring ERROR [100%]
+
+==================================== ERRORS ====================================
+_________ ERROR at setup of TestDatabaseSecurity.test_password_hashing _________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_____ ERROR at setup of TestDatabaseSecurity.test_sql_injection_prevention _____
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_________ ERROR at setup of TestDatabaseSecurity.test_user_permissions _________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+__________ ERROR at setup of TestDatabaseSecurity.test_audit_logging ___________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_________ ERROR at setup of TestDatabaseSecurity.test_data_encryption __________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_____ ERROR at setup of TestDatabasePerformance.test_query_execution_time ______
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______ ERROR at setup of TestDatabasePerformance.test_index_effectiveness ______
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______ ERROR at setup of TestDatabasePerformance.test_concurrent_queries _______
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_________ ERROR at setup of TestDatabasePerformance.test_memory_usage __________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_____ ERROR at setup of TestDatabasePerformance.test_vacuum_effectiveness ______
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_____________ ERROR at setup of TestStressTesting.test_heavy_load ______________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+__________ ERROR at setup of TestStressTesting.test_concurrent_writes __________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_ ERROR at setup of TestMonitoringAndMetrics.test_performance_metrics_collection _
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+______ ERROR at setup of TestMonitoringAndMetrics.test_system_statistics _______
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+_______ ERROR at setup of TestMonitoringAndMetrics.test_lock_monitoring ________
+conftest.py:37: in postgres_connection
+    conn = psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+=================================== FAILURES ===================================
+_______________ TestDatabasePerformance.test_connection_pooling ________________
+test_security_performance.py:194: in test_connection_pooling
+    conn = create_connection()
+           ^^^^^^^^^^^^^^^^^^^
+test_security_performance.py:180: in create_connection
+    return psycopg2.connect(
+venv/lib/python3.13/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "taskweight_user"
+=============================== warnings summary ===============================
+test_security_performance.py:19
+  /Users/vovkes/taskweight/database/test_security_performance.py:19: PytestUnknownMarkWarning: Unknown pytest.mark.database - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.database, pytest.mark.security, pytest.mark.performance]
+
+test_security_performance.py:19
+  /Users/vovkes/taskweight/database/test_security_performance.py:19: PytestUnknownMarkWarning: Unknown pytest.mark.security - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.database, pytest.mark.security, pytest.mark.performance]
+
+test_security_performance.py:19
+  /Users/vovkes/taskweight/database/test_security_performance.py:19: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.database, pytest.mark.security, pytest.mark.performance]
+
+test_security_performance.py:124
+  /Users/vovkes/taskweight/database/test_security_performance.py:124: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+test_security_performance.py:150
+  /Users/vovkes/taskweight/database/test_security_performance.py:150: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+test_security_performance.py:176
+  /Users/vovkes/taskweight/database/test_security_performance.py:176: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+test_security_performance.py:214
+  /Users/vovkes/taskweight/database/test_security_performance.py:214: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+test_security_performance.py:249
+  /Users/vovkes/taskweight/database/test_security_performance.py:249: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+test_security_performance.py:268
+  /Users/vovkes/taskweight/database/test_security_performance.py:268: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+test_security_performance.py:299
+  /Users/vovkes/taskweight/database/test_security_performance.py:299: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+test_security_performance.py:340
+  /Users/vovkes/taskweight/database/test_security_performance.py:340: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED test_security_performance.py::TestDatabasePerformance::test_connection_pooling
+ERROR test_security_performance.py::TestDatabaseSecurity::test_password_hashing
+ERROR test_security_performance.py::TestDatabaseSecurity::test_sql_injection_prevention
+ERROR test_security_performance.py::TestDatabaseSecurity::test_user_permissions
+ERROR test_security_performance.py::TestDatabaseSecurity::test_audit_logging
+ERROR test_security_performance.py::TestDatabaseSecurity::test_data_encryption
+ERROR test_security_performance.py::TestDatabasePerformance::test_query_execution_time
+ERROR test_security_performance.py::TestDatabasePerformance::test_index_effectiveness
+ERROR test_security_performance.py::TestDatabasePerformance::test_concurrent_queries
+ERROR test_security_performance.py::TestDatabasePerformance::test_memory_usage
+ERROR test_security_performance.py::TestDatabasePerformance::test_vacuum_effectiveness
+ERROR test_security_performance.py::TestStressTesting::test_heavy_load - psyc...
+ERROR test_security_performance.py::TestStressTesting::test_concurrent_writes
+ERROR test_security_performance.py::TestMonitoringAndMetrics::test_performance_metrics_collection
+ERROR test_security_performance.py::TestMonitoringAndMetrics::test_system_statistics
+ERROR test_security_performance.py::TestMonitoringAndMetrics::test_lock_monitoring
+================== 1 failed, 11 warnings, 15 errors in 0.93s ===================
+
+------------------------------
+

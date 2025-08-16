@@ -152,16 +152,16 @@ class TrelloCardData(BaseModel):
 class TrelloEstimationRequest(BaseModel):
     card_id: str = Field(..., min_length=1, description="Trello card ID")
     task_description: str = Field(..., min_length=10, description="Task description (min 10 characters)")
-    repo_url: str = Field(..., regex=r"^https?://github\.com/[^/]+/[^/]+", description="GitHub repository URL")
-    priority: str = Field("medium", regex="^(low|medium|high|critical)$", description="Task priority")
-    complexity: str = Field("medium", regex="^(simple|medium|complex|very_complex)$", description="Expected complexity")
+    repo_url: str = Field(..., pattern=r"^https?://github\.com/[^/]+/[^/]+", description="GitHub repository URL")
+    priority: str = Field("medium", pattern="^(low|medium|high|critical)$", description="Task priority")
+    complexity: str = Field("medium", pattern="^(simple|medium|complex|very_complex)$", description="Expected complexity")
     user_id: Optional[str] = Field(None, min_length=1, description="User ID for tracking")
     team_id: Optional[str] = Field(None, min_length=1, description="Team ID for tracking")
     project_id: Optional[str] = Field(None, min_length=1, description="Project ID for tracking")
     trello_card_data: Optional[TrelloCardData] = Field(None, description="Trello card data for enhanced analysis")
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "card_id": "64f1a2b3c4d5e6f7g8h9i0j1",
                 "task_description": "Implement user authentication system with JWT tokens",

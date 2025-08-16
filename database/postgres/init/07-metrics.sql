@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS metrics (
 -- Create performance_metrics table for task performance tracking
 CREATE TABLE IF NOT EXISTS performance_metrics (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
+    card_id VARCHAR(255) NOT NULL, -- String identifier for the card/task
     metric_type VARCHAR(50) NOT NULL, -- 'estimation_accuracy', 'completion_time', 'quality_score'
     metric_value DECIMAL(10,4) NOT NULL,
     baseline_value DECIMAL(10,4),
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS estimation_accuracy_history (
 -- Create indexes for metrics
 CREATE INDEX IF NOT EXISTS idx_metrics_name_timestamp ON metrics(metric_name, timestamp);
 CREATE INDEX IF NOT EXISTS idx_metrics_source ON metrics(source);
-CREATE INDEX IF NOT EXISTS idx_performance_metrics_task_id ON performance_metrics(task_id);
+CREATE INDEX IF NOT EXISTS idx_performance_metrics_card_id ON performance_metrics(card_id);
 CREATE INDEX IF NOT EXISTS idx_performance_metrics_type ON performance_metrics(metric_type);
 CREATE INDEX IF NOT EXISTS idx_user_activity_logs_user_id ON user_activity_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_activity_logs_type ON user_activity_logs(activity_type);
