@@ -186,113 +186,21 @@ TaskWeight's data intelligence system aggregates information from multiple sourc
 \label{fig:data-collection}
 \end{figure}
 
-\subsection{Real-Time Data Streaming Pipeline}
+\subsection{Real-Time Data Streaming Architecture}
 
-The system implements a sophisticated streaming architecture for real-time data processing and immediate insight generation.
+The TaskWeight system implements a sophisticated streaming architecture designed for real-time data processing and immediate insight generation. This architecture enables continuous monitoring of development activities and provides instant feedback to development teams.
 
-\begin{lstlisting}[language=Python, caption=Real-Time Data Streaming Implementation]
-import asyncio
-import json
-from typing import Dict, List, Any
-from dataclasses import dataclass, asdict
-from datetime import datetime
-import kafka
-import redis
-import pandas as pd
+The streaming pipeline operates on multiple levels:
 
-@dataclass
-class DevelopmentEvent:
-    event_type: str
-    user_id: str
-    project_id: str
-    timestamp: datetime
-    metadata: Dict[str, Any]
-    
-class RealTimeDataCollector:
-    def __init__(self, kafka_config: Dict, redis_client: redis.Redis):
-        self.kafka_producer = kafka.KafkaProducer(
-            **kafka_config,
-            value_serializer=lambda x: json.dumps(x, default=str).encode()
-        )
-        self.redis_client = redis_client
-        self.event_handlers = {
-            'task_created': self._handle_task_creation,
-            'task_completed': self._handle_task_completion,
-            'commit_pushed': self._handle_code_commit,
-            'estimation_requested': self._handle_estimation_request
-        }
-    
-    async def collect_event(self, event: DevelopmentEvent):
-        """Collect and process development events in real-time"""
-        try:
-            # Immediate processing for critical events
-            if event.event_type in self.event_handlers:
-                await self.event_handlers[event.event_type](event)
-            
-            # Stream to Kafka for distributed processing
-            self.kafka_producer.send(
-                topic='development_events',
-                value=asdict(event),
-                key=f"{event.project_id}:{event.user_id}"
-            )
-            
-            # Cache recent events for quick access
-            cache_key = f"recent_events:{event.user_id}"
-            self.redis_client.lpush(cache_key, json.dumps(asdict(event), default=str))
-            self.redis_client.ltrim(cache_key, 0, 100)  # Keep last 100 events
-            self.redis_client.expire(cache_key, 3600)   # Expire after 1 hour
-            
-        except Exception as e:
-            await self._handle_collection_error(event, e)
-    
-    async def _handle_task_creation(self, event: DevelopmentEvent):
-        """Process task creation events for immediate insights"""
-        task_data = event.metadata
-        
-        # Extract task complexity indicators
-        complexity_score = await self._calculate_complexity_score(task_data)
-        
-        # Update user activity patterns
-        await self._update_user_patterns(event.user_id, 'task_creation', complexity_score)
-        
-        # Trigger proactive estimation if configured
-        if task_data.get('auto_estimate', False):
-            await self._trigger_proactive_estimation(event)
-    
-    async def _calculate_complexity_score(self, task_data: Dict) -> float:
-        """Calculate task complexity based on multiple factors"""
-        factors = {
-            'description_length': len(task_data.get('description', '')),
-            'acceptance_criteria_count': len(task_data.get('acceptance_criteria', [])),
-            'labels_count': len(task_data.get('labels', [])),
-            'dependencies_count': len(task_data.get('dependencies', [])),
-            'technology_stack_complexity': self._assess_tech_complexity(task_data)
-        }
-        
-        # Weighted complexity calculation
-        weights = {
-            'description_length': 0.2,
-            'acceptance_criteria_count': 0.3,
-            'labels_count': 0.1,
-            'dependencies_count': 0.25,
-            'technology_stack_complexity': 0.15
-        }
-        
-        normalized_factors = {
-            'description_length': min(factors['description_length'] / 1000, 1.0),
-            'acceptance_criteria_count': min(factors['acceptance_criteria_count'] / 10, 1.0),
-            'labels_count': min(factors['labels_count'] / 5, 1.0),
-            'dependencies_count': min(factors['dependencies_count'] / 8, 1.0),
-            'technology_stack_complexity': factors['technology_stack_complexity']
-        }
-        
-        complexity_score = sum(
-            normalized_factors[factor] * weights[factor] 
-            for factor in weights
-        )
-        
-        return complexity_score
-\end{lstlisting}
+\textbf{Event Collection Layer:} Captures development events from various sources including Git commits, task management systems, and IDE activities. Each event is timestamped and enriched with contextual metadata to provide comprehensive tracking of development patterns.
+
+\textbf{Stream Processing Engine:} Processes incoming events in real-time using distributed stream processing technologies. The engine applies immediate analysis algorithms to detect patterns, anomalies, and opportunities for proactive estimation updates.
+
+\textbf{Intelligent Routing System:} Directs different types of events to specialized processing pipelines based on event characteristics, urgency, and analytical requirements. Critical events receive immediate processing while routine events are batched for efficiency.
+
+\textbf{Real-Time Analytics:} Provides instant calculations of key performance indicators, complexity assessments, and estimation accuracy metrics. These analytics feed directly into the dashboard for immediate visibility into project health and progress.
+
+The streaming architecture ensures that TaskWeight can respond to development changes within seconds, providing teams with the most current insights and recommendations based on their actual work patterns and progress.
 
 \section{Advanced Analytics Engine}
 
@@ -303,7 +211,7 @@ TaskWeight implements sophisticated analytics to track and analyze developer per
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=2cm,
+    node distance=2.5cm,
     every node/.style={align=center},
     metric/.style={rectangle, rounded corners, minimum width=2.2cm, minimum height=1cm, text centered, draw=deepred, fill=deepred!15, thick},
     analysis/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=1.2cm, text centered, draw=secondarygreen, fill=secondarygreen!15, thick},
@@ -311,23 +219,23 @@ TaskWeight implements sophisticated analytics to track and analyze developer per
     arrow/.style={thick,->,>=stealth}
 ]
 
-% Performance metrics
+% Performance metrics - spread wider
 \node[metric] (velocity) {Developer\\Velocity};
-\node[metric, right of=velocity] (accuracy) {Estimation\\Accuracy};
-\node[metric, right of=accuracy] (complexity) {Task\\Complexity};
+\node[metric, right of=velocity, xshift=1cm] (accuracy) {Estimation\\Accuracy};
+\node[metric, right of=accuracy, xshift=1cm] (complexity) {Task\\Complexity};
 \node[metric, below of=velocity] (quality) {Code\\Quality};
-\node[metric, right of=quality] (collaboration) {Team\\Collaboration};
-\node[metric, right of=collaboration] (efficiency) {Process\\Efficiency};
+\node[metric, right of=quality, xshift=1cm] (collaboration) {Team\\Collaboration};
+\node[metric, right of=collaboration, xshift=1cm] (efficiency) {Process\\Efficiency};
 
-% Analysis engines
+% Analysis engines - spread wider
 \node[analysis, below of=accuracy, yshift=-1.5cm] (correlation) {Correlation\\Analysis};
-\node[analysis, left of=correlation] (trend) {Trend\\Analysis};
-\node[analysis, right of=correlation] (anomaly) {Anomaly\\Detection};
+\node[analysis, left of=correlation, xshift=-1.5cm] (trend) {Trend\\Analysis};
+\node[analysis, right of=correlation, xshift=1.5cm] (anomaly) {Anomaly\\Detection};
 
-% Insights
+% Insights - spread wider
 \node[insight, below of=correlation, yshift=-1.5cm] (patterns) {Performance\\Patterns};
-\node[insight, left of=patterns] (predictions) {Predictive\\Insights};
-\node[insight, right of=patterns] (recommendations) {Optimization\\Recommendations};
+\node[insight, left of=patterns, xshift=-1.5cm] (predictions) {Predictive\\Insights};
+\node[insight, right of=patterns, xshift=1.5cm] (recommendations) {Optimization\\Recommendations};
 
 % Connections
 \draw[arrow] (velocity) -- (trend);
@@ -353,7 +261,7 @@ The data warehouse implements a sophisticated star schema optimized for analytic
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=2.5cm,
+    node distance=3cm,
     every node/.style={align=center},
     fact/.style={rectangle, rounded corners, minimum width=3cm, minimum height=2cm, text centered, draw=primaryblue, fill=primaryblue!20, thick},
     dimension/.style={rectangle, rounded corners, minimum width=2.2cm, minimum height=1.5cm, text centered, draw=secondarygreen, fill=secondarygreen!15, thick},
@@ -363,20 +271,20 @@ The data warehouse implements a sophisticated star schema optimized for analytic
 % Central fact table
 \node[fact] (fact_estimation) {Fact\_Estimation\\\\estimation\_id\\user\_id\\project\_id\\task\_id\\time\_id\\estimated\_hours\\actual\_hours\\accuracy\_score\\complexity\_score};
 
-% Dimension tables
-\node[dimension, above left of=fact_estimation, xshift=-1cm, yshift=1cm] (dim_user) {Dim\_User\\\\user\_id\\username\\experience\_level\\skill\_set\\performance\_rating};
+% Dimension tables - spread further from center
+\node[dimension, above left of=fact_estimation, xshift=-2cm, yshift=1.5cm] (dim_user) {Dim\_User\\\\user\_id\\username\\experience\_level\\skill\_set\\performance\_rating};
 
-\node[dimension, above of=fact_estimation, yshift=1cm] (dim_project) {Dim\_Project\\\\project\_id\\project\_name\\technology\_stack\\team\_size\\complexity\_level};
+\node[dimension, above of=fact_estimation, yshift=1.5cm] (dim_project) {Dim\_Project\\\\project\_id\\project\_name\\technology\_stack\\team\_size\\complexity\_level};
 
-\node[dimension, above right of=fact_estimation, xshift=1cm, yshift=1cm] (dim_task) {Dim\_Task\\\\task\_id\\task\_type\\priority\\category\\dependencies};
+\node[dimension, above right of=fact_estimation, xshift=2cm, yshift=1.5cm] (dim_task) {Dim\_Task\\\\task\_id\\task\_type\\priority\\category\\dependencies};
 
-\node[dimension, left of=fact_estimation, xshift=-1cm] (dim_time) {Dim\_Time\\\\time\_id\\date\\week\\month\\quarter\\year\\is\_weekend};
+\node[dimension, left of=fact_estimation, xshift=-2cm] (dim_time) {Dim\_Time\\\\time\_id\\date\\week\\month\\quarter\\year\\is\_weekend};
 
-\node[dimension, right of=fact_estimation, xshift=1cm] (dim_technology) {Dim\_Technology\\\\tech\_id\\language\\framework\\tools\\complexity\_factor};
+\node[dimension, right of=fact_estimation, xshift=2cm] (dim_technology) {Dim\_Technology\\\\tech\_id\\language\\framework\\tools\\complexity\_factor};
 
-\node[dimension, below left of=fact_estimation, xshift=-1cm, yshift=-1cm] (dim_process) {Dim\_Process\\\\process\_id\\methodology\\review\_type\\testing\_approach\\deployment\_strategy};
+\node[dimension, below left of=fact_estimation, xshift=-2cm, yshift=-1.5cm] (dim_process) {Dim\_Process\\\\process\_id\\methodology\\review\_type\\testing\_approach\\deployment\_strategy};
 
-\node[dimension, below right of=fact_estimation, xshift=1cm, yshift=-1cm] (dim_environment) {Dim\_Environment\\\\env\_id\\development\_env\\ci\_cd\_pipeline\\monitoring\_tools\\infrastructure};
+\node[dimension, below right of=fact_estimation, xshift=2cm, yshift=-1.5cm] (dim_environment) {Dim\_Environment\\\\env\_id\\development\_env\\ci\_cd\_pipeline\\monitoring\_tools\\infrastructure};
 
 % Connections
 \draw[arrow] (dim_user) -- (fact_estimation);
@@ -396,218 +304,58 @@ The data warehouse implements a sophisticated star schema optimized for analytic
 
 \subsection{Feature Engineering Framework}
 
-TaskWeight implements an advanced feature engineering pipeline that transforms raw development data into meaningful features for machine learning models.
+TaskWeight implements an advanced feature engineering pipeline that transforms raw development data into meaningful features for machine learning models. This sophisticated system processes multiple data dimensions to create a comprehensive feature set for accurate estimation predictions.
 
-\begin{lstlisting}[language=Python, caption=Advanced Feature Engineering Pipeline]
-import numpy as np
-import pandas as pd
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.feature_extraction.text import TfidfVectorizer
-from typing import Dict, List, Tuple, Any
-import re
-from datetime import datetime, timedelta
+\textbf{Temporal Feature Engineering:} The system extracts time-based patterns from development activities, including cyclical encoding of temporal features such as hour of day, day of week, and seasonal patterns. These features capture the natural rhythms of development work and help identify when teams are most productive.
 
-class AdvancedFeatureEngineer:
-    def __init__(self):
-        self.scalers = {}
-        self.encoders = {}
-        self.vectorizers = {}
-        
-    def engineer_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Comprehensive feature engineering for estimation models"""
-        
-        # Create a copy to avoid modifying original data
-        features_df = df.copy()
-        
-        # 1. Temporal Features
-        features_df = self._create_temporal_features(features_df)
-        
-        # 2. Text-based Features
-        features_df = self._create_text_features(features_df)
-        
-        # 3. Developer Performance Features
-        features_df = self._create_developer_features(features_df)
-        
-        # 4. Project Context Features
-        features_df = self._create_project_features(features_df)
-        
-        # 5. Technical Complexity Features
-        features_df = self._create_complexity_features(features_df)
-        
-        # 6. Historical Pattern Features
-        features_df = self._create_historical_features(features_df)
-        
-        # 7. Interaction Features
-        features_df = self._create_interaction_features(features_df)
-        
-        return features_df
-    
-    def _create_temporal_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Create time-based features that capture temporal patterns"""
-        
-        # Convert timestamp to datetime if needed
-        if 'created_at' in df.columns:
-            df['created_at'] = pd.to_datetime(df['created_at'])
-            
-            # Basic temporal features
-            df['hour_of_day'] = df['created_at'].dt.hour
-            df['day_of_week'] = df['created_at'].dt.dayofweek
-            df['month'] = df['created_at'].dt.month
-            df['quarter'] = df['created_at'].dt.quarter
-            df['is_weekend'] = df['day_of_week'].isin([5, 6]).astype(int)
-            df['is_business_hours'] = ((df['hour_of_day'] >= 9) & 
-                                     (df['hour_of_day'] <= 17)).astype(int)
-            
-            # Cyclical encoding for temporal features
-            df['hour_sin'] = np.sin(2 * np.pi * df['hour_of_day'] / 24)
-            df['hour_cos'] = np.cos(2 * np.pi * df['hour_of_day'] / 24)
-            df['day_sin'] = np.sin(2 * np.pi * df['day_of_week'] / 7)
-            df['day_cos'] = np.cos(2 * np.pi * df['day_of_week'] / 7)
-            df['month_sin'] = np.sin(2 * np.pi * df['month'] / 12)
-            df['month_cos'] = np.cos(2 * np.pi * df['month'] / 12)
-        
-        return df
-    
-    def _create_text_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Extract features from task descriptions and comments"""
-        
-        if 'task_description' in df.columns:
-            # Basic text statistics
-            df['description_length'] = df['task_description'].str.len()
-            df['word_count'] = df['task_description'].str.split().str.len()
-            df['sentence_count'] = df['task_description'].str.count(r'[.!?]+')
-            df['avg_word_length'] = (df['description_length'] / 
-                                   df['word_count'].replace(0, 1))
-            
-            # Technical keyword detection
-            technical_keywords = [
-                'api', 'database', 'frontend', 'backend', 'algorithm',
-                'optimization', 'security', 'performance', 'integration',
-                'refactor', 'migration', 'testing', 'deployment'
-            ]
-            
-            for keyword in technical_keywords:
-                df[f'has_{keyword}'] = df['task_description'].str.contains(
-                    keyword, case=False, na=False
-                ).astype(int)
-            
-            # Complexity indicators
-            complexity_indicators = [
-                r'\b(complex|difficult|challenging)\b',
-                r'\b(multiple|several|various)\b',
-                r'\b(integrate|coordination|synchroniz)\w*\b',
-                r'\b(performance|optimization|scalability)\b'
-            ]
-            
-            for i, pattern in enumerate(complexity_indicators):
-                df[f'complexity_indicator_{i}'] = df['task_description'].str.contains(
-                    pattern, case=False, na=False, regex=True
-                ).astype(int)
-            
-            # TF-IDF features for semantic similarity
-            if 'task_description' in df.columns and len(df) > 1:
-                tfidf = TfidfVectorizer(
-                    max_features=100,
-                    stop_words='english',
-                    ngram_range=(1, 2)
-                )
-                
-                tfidf_matrix = tfidf.fit_transform(df['task_description'].fillna(''))
-                tfidf_features = pd.DataFrame(
-                    tfidf_matrix.toarray(),
-                    columns=[f'tfidf_{i}' for i in range(tfidf_matrix.shape[1])],
-                    index=df.index
-                )
-                df = pd.concat([df, tfidf_features], axis=1)
-                self.vectorizers['task_description'] = tfidf
-        
-        return df
-    
-    def _create_developer_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Create features based on developer performance history"""
-        
-        if 'user_id' in df.columns:
-            # Historical accuracy by developer
-            user_accuracy = df.groupby('user_id')['accuracy_score'].agg([
-                'mean', 'std', 'count', 'median'
-            ]).add_prefix('user_accuracy_')
-            
-            # Developer velocity patterns
-            user_velocity = df.groupby('user_id')['actual_hours'].agg([
-                'mean', 'std', 'median'
-            ]).add_prefix('user_velocity_')
-            
-            # Developer complexity preference
-            user_complexity = df.groupby('user_id')['complexity_score'].agg([
-                'mean', 'std', 'max'
-            ]).add_prefix('user_complexity_')
-            
-            # Merge developer features
-            df = df.merge(user_accuracy, left_on='user_id', right_index=True, how='left')
-            df = df.merge(user_velocity, left_on='user_id', right_index=True, how='left')
-            df = df.merge(user_complexity, left_on='user_id', right_index=True, how='left')
-            
-            # Developer experience level (based on historical data)
-            df['developer_experience_days'] = (
-                df.groupby('user_id')['created_at'].transform('max') -
-                df.groupby('user_id')['created_at'].transform('min')
-            ).dt.days
-            
-            df['developer_task_count'] = df.groupby('user_id').cumcount() + 1
-        
-        return df
-    
-    def _create_complexity_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Create features that capture task complexity"""
-        
-        # Technology stack complexity
-        if 'technology_stack' in df.columns:
-            df['tech_stack_count'] = df['technology_stack'].str.split(',').str.len()
-            
-            # Known complex technologies
-            complex_techs = ['kubernetes', 'microservices', 'machine learning', 
-                           'blockchain', 'distributed systems']
-            
-            for tech in complex_techs:
-                df[f'uses_{tech.replace(" ", "_")}'] = df['technology_stack'].str.contains(
-                    tech, case=False, na=False
-                ).astype(int)
-        
-        # Dependencies complexity
-        if 'dependencies' in df.columns:
-            df['dependency_count'] = df['dependencies'].str.split(',').str.len()
-            df['has_external_dependencies'] = df['dependencies'].str.contains(
-                'external', case=False, na=False
-            ).astype(int)
-        
-        # Priority-based complexity
-        if 'priority' in df.columns:
-            priority_weights = {'low': 1, 'medium': 2, 'high': 3, 'critical': 4}
-            df['priority_weight'] = df['priority'].map(priority_weights).fillna(2)
-        
-        return df
-    
-    def _create_interaction_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Create interaction features between different dimensions"""
-        
-        # User-project interaction
-        if 'user_id' in df.columns and 'project_id' in df.columns:
-            df['user_project_familiarity'] = df.groupby(['user_id', 'project_id']).cumcount()
-        
-        # Complexity-priority interaction
-        if 'complexity_score' in df.columns and 'priority_weight' in df.columns:
-            df['complexity_priority_interaction'] = (
-                df['complexity_score'] * df['priority_weight']
-            )
-        
-        # Time-complexity interaction
-        if 'is_business_hours' in df.columns and 'complexity_score' in df.columns:
-            df['off_hours_complexity'] = (
-                (1 - df['is_business_hours']) * df['complexity_score']
-            )
-        
-        return df
-\end{lstlisting}
+\textbf{Text Analysis and NLP Features:} Advanced natural language processing techniques analyze task descriptions, comments, and documentation to extract semantic features. The system employs TF-IDF vectorization, technical keyword detection, and complexity indicators to understand the nature and difficulty of development tasks.
+
+\textbf{Developer Performance Profiling:} Historical performance data is analyzed to create developer-specific features including accuracy patterns, velocity trends, and complexity preferences. These features enable personalized estimation models that adapt to individual developer characteristics.
+
+\textbf{Project Context Analysis:} The system analyzes project-level factors such as technology stack complexity, team composition, and organizational patterns. These contextual features help the model understand how project characteristics influence estimation accuracy.
+
+\textbf{Technical Complexity Assessment:} Sophisticated algorithms evaluate technical complexity based on technology stack requirements, dependency analysis, and integration challenges. The system recognizes complex technologies and architectural patterns that typically require additional development time.
+
+\textbf{Interaction Feature Generation:} The pipeline creates interaction features that capture relationships between different dimensions, such as developer-project familiarity, complexity-priority interactions, and temporal-complexity patterns. These features help the model understand how different factors combine to influence development time.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=2cm,
+    every node/.style={align=center},
+    input/.style={rectangle, rounded corners, minimum width=2.2cm, minimum height=1cm, text centered, draw=primaryblue, fill=primaryblue!15, thick},
+    process/.style={rectangle, rounded corners, minimum width=2.5cm, minimum height=1.2cm, text centered, draw=secondarygreen, fill=secondarygreen!15, thick},
+    output/.style={ellipse, minimum width=2.2cm, minimum height=1cm, text centered, draw=accentorange, fill=accentorange!15, thick},
+    arrow/.style={thick,->,>=stealth}
+]
+
+% Input features
+\node[input] (raw_text) {Task\\Descriptions};
+\node[input, right of=raw_text] (dev_history) {Developer\\History};
+\node[input, right of=dev_history] (project_data) {Project\\Context};
+\node[input, below of=raw_text] (temporal) {Temporal\\Data};
+\node[input, right of=temporal] (tech_stack) {Technology\\Stack};
+\node[input, right of=tech_stack] (dependencies) {Dependencies};
+
+% Processing pipeline
+\node[process, below of=dev_history, yshift=-1.5cm] (feature_eng) {Feature\\Engineering\\Pipeline};
+
+% Output features
+\node[output, below of=feature_eng, yshift=-1.5cm] (ml_features) {ML-Ready\\Feature\\Vector};
+
+% Connections
+\draw[arrow] (raw_text) -- (feature_eng);
+\draw[arrow] (dev_history) -- (feature_eng);
+\draw[arrow] (project_data) -- (feature_eng);
+\draw[arrow] (temporal) -- (feature_eng);
+\draw[arrow] (tech_stack) -- (feature_eng);
+\draw[arrow] (dependencies) -- (feature_eng);
+\draw[arrow] (feature_eng) -- (ml_features);
+
+\end{tikzpicture}
+\caption{Feature Engineering Pipeline Architecture}
+\label{fig:feature-engineering}
+\end{figure}
 
 \subsection{Ensemble Learning Architecture}
 
@@ -616,7 +364,7 @@ TaskWeight employs a sophisticated ensemble learning approach that combines mult
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=2cm,
+    node distance=2.5cm,
     every node/.style={align=center},
     model/.style={rectangle, rounded corners, minimum width=2.2cm, minimum height=1.2cm, text centered, draw=primaryblue, fill=primaryblue!15, thick},
     ensemble/.style={rectangle, rounded corners, minimum width=3cm, minimum height=1.5cm, text centered, draw=accentorange, fill=accentorange!20, thick},
@@ -624,36 +372,28 @@ TaskWeight employs a sophisticated ensemble learning approach that combines mult
     arrow/.style={thick,->,>=stealth}
 ]
 
-% Individual models
+% Individual models - spread wider
 \node[model] (xgboost) {XGBoost\\Regressor};
-\node[model, right of=xgboost] (neural) {Neural\\Network};
-\node[model, right of=neural] (random_forest) {Random\\Forest};
+\node[model, right of=xgboost, xshift=1cm] (neural) {Neural\\Network};
+\node[model, right of=neural, xshift=1cm] (random_forest) {Random\\Forest};
 \node[model, below of=xgboost] (linear) {Linear\\Regression};
-\node[model, right of=linear] (svm) {Support Vector\\Regression};
-\node[model, right of=svm] (lstm) {LSTM\\Network};
+\node[model, right of=linear, xshift=1cm] (svm) {Support Vector\\Regression};
+\node[model, right of=svm, xshift=1cm] (lstm) {LSTM\\Network};
 
 % Ensemble layer
-\node[ensemble, below of=svm, yshift=-1cm] (meta_learner) {Meta-Learner\\(Stacking)\\\\Weighted Voting\\Bayesian Optimization};
+\node[ensemble, below of=svm, yshift=-1.5cm] (meta_learner) {Meta-Learner\\(Stacking)\\\\Weighted Voting\\Bayesian Optimization};
 
 % Final output
-\node[output, below of=meta_learner, yshift=-1cm] (prediction) {Final\\Estimation\\Prediction};
+\node[output, below of=meta_learner, yshift=-1.5cm] (prediction) {Final\\Estimation\\Prediction};
 
-% Connections
-\draw[arrow] (xgboost) -- (meta_learner);
-\draw[arrow] (neural) -- (meta_learner);
-\draw[arrow] (random_forest) -- (meta_learner);
-\draw[arrow] (linear) -- (meta_learner);
-\draw[arrow] (svm) -- (meta_learner);
-\draw[arrow] (lstm) -- (meta_learner);
+% Connections with labels positioned away from orange block
+\draw[arrow] (xgboost) -- (meta_learner) node[midway, left, xshift=-0.3cm] {\footnotesize Non-linear};
+\draw[arrow] (neural) -- (meta_learner) node[midway, above left, xshift=-0.2cm, yshift=0.1cm] {\footnotesize Complex};
+\draw[arrow] (random_forest) -- (meta_learner) node[midway, right, xshift=0.3cm] {\footnotesize Features};
+\draw[arrow] (linear) -- (meta_learner) node[midway, left, xshift=-0.3cm] {\footnotesize Baseline};
+\draw[arrow] (svm) -- (meta_learner) node[midway, below left, xshift=-0.2cm, yshift=-0.1cm] {\footnotesize High-Dim};
+\draw[arrow] (lstm) -- (meta_learner) node[midway, right, xshift=0.3cm] {\footnotesize Sequential};
 \draw[arrow] (meta_learner) -- (prediction);
-
-% Model specializations (annotations)
-\node[above of=xgboost, yshift=0.5cm, font=\small] {Handles\\Non-linearity};
-\node[above of=neural, yshift=0.5cm, font=\small] {Complex\\Patterns};
-\node[above of=random_forest, yshift=0.5cm, font=\small] {Feature\\Importance};
-\node[below of=linear, yshift=-0.5cm, font=\small] {Baseline\\Performance};
-\node[below of=svm, yshift=-0.5cm, font=\small] {High-Dimensional\\Data};
-\node[below of=lstm, yshift=-0.5cm, font=\small] {Sequential\\Patterns};
 
 \end{tikzpicture}
 \caption{Ensemble Learning Architecture for Estimation Prediction}
@@ -751,229 +491,26 @@ The dashboard implements sophisticated visualization techniques to present multi
 
 \subsection{Advanced Forecasting Models}
 
-TaskWeight implements state-of-the-art forecasting models to predict project timelines, resource requirements, and potential bottlenecks.
+TaskWeight implements state-of-the-art forecasting models to predict project timelines, resource requirements, and potential bottlenecks. The predictive analytics engine serves as the forward-looking component of the system, enabling proactive project management and risk mitigation.
 
-\begin{lstlisting}[language=Python, caption=Advanced Forecasting Implementation]
-import numpy as np
-import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error
-import tensorflow as tf
-from tensorflow import keras
-from typing import List, Dict, Tuple
-import warnings
-warnings.filterwarnings('ignore')
+\textbf{Project Timeline Forecasting:} The system employs advanced deep learning models, including LSTM networks and hybrid architectures, to predict project completion timelines with high accuracy. These models analyze historical project patterns, team performance metrics, and current project characteristics to generate precise timeline estimates with confidence intervals.
 
-class AdvancedForecastingEngine:
-    def __init__(self):
-        self.models = {
-            'project_timeline': None,
-            'resource_demand': None,
-            'bottleneck_prediction': None,
-            'quality_forecast': None
-        }
-        self.feature_importance = {}
-        
-    def train_project_timeline_forecaster(self, historical_data: pd.DataFrame):
-        """Train advanced project timeline forecasting model"""
-        
-        # Feature engineering for timeline prediction
-        features = self._engineer_timeline_features(historical_data)
-        
-        # Target variable: actual project duration
-        target = historical_data['actual_project_duration_hours']
-        
-        # Create sequence data for LSTM
-        X_sequences, y_sequences = self._create_sequences(features, target, seq_length=10)
-        
-        # Build hybrid model (LSTM + Dense layers)
-        model = self._build_timeline_lstm_model(X_sequences.shape[1:])
-        
-        # Train with early stopping and learning rate scheduling
-        early_stopping = keras.callbacks.EarlyStopping(
-            monitor='val_loss', patience=10, restore_best_weights=True
-        )
-        
-        lr_scheduler = keras.callbacks.ReduceLROnPlateau(
-            monitor='val_loss', factor=0.5, patience=5, min_lr=1e-6
-        )
-        
-        history = model.fit(
-            X_sequences, y_sequences,
-            batch_size=32,
-            epochs=100,
-            validation_split=0.2,
-            callbacks=[early_stopping, lr_scheduler],
-            verbose=0
-        )
-        
-        self.models['project_timeline'] = model
-        return history
-    
-    def _build_timeline_lstm_model(self, input_shape: Tuple) -> keras.Model:
-        """Build sophisticated LSTM model for timeline prediction"""
-        
-        model = keras.Sequential([
-            # LSTM layers with dropout for regularization
-            keras.layers.LSTM(128, return_sequences=True, input_shape=input_shape),
-            keras.layers.Dropout(0.2),
-            keras.layers.LSTM(64, return_sequences=True),
-            keras.layers.Dropout(0.2),
-            keras.layers.LSTM(32, return_sequences=False),
-            keras.layers.Dropout(0.2),
-            
-            # Dense layers for final prediction
-            keras.layers.Dense(64, activation='relu'),
-            keras.layers.Dropout(0.1),
-            keras.layers.Dense(32, activation='relu'),
-            keras.layers.Dense(1, activation='linear')
-        ])
-        
-        # Custom optimizer with gradient clipping
-        optimizer = keras.optimizers.Adam(
-            learning_rate=0.001,
-            clipnorm=1.0
-        )
-        
-        model.compile(
-            optimizer=optimizer,
-            loss='huber',  # Robust to outliers
-            metrics=['mae', 'mse']
-        )
-        
-        return model
-    
-    def predict_project_timeline(self, project_features: Dict) -> Dict:
-        """Predict project timeline with confidence intervals"""
-        
-        if self.models['project_timeline'] is None:
-            raise ValueError("Timeline forecasting model not trained")
-        
-        # Prepare features
-        feature_vector = self._prepare_project_features(project_features)
-        
-        # Generate predictions with Monte Carlo Dropout
-        predictions = []
-        n_samples = 100
-        
-        for _ in range(n_samples):
-            pred = self.models['project_timeline'](feature_vector, training=True)
-            predictions.append(pred.numpy()[0][0])
-        
-        predictions = np.array(predictions)
-        
-        # Calculate statistics
-        mean_prediction = np.mean(predictions)
-        std_prediction = np.std(predictions)
-        confidence_95 = np.percentile(predictions, [2.5, 97.5])
-        
-        return {
-            'estimated_hours': mean_prediction,
-            'confidence_interval_95': confidence_95,
-            'prediction_uncertainty': std_prediction,
-            'risk_assessment': self._assess_timeline_risk(mean_prediction, std_prediction)
-        }
-    
-    def train_bottleneck_predictor(self, project_data: pd.DataFrame):
-        """Train bottleneck prediction model using ensemble methods"""
-        
-        # Engineer features for bottleneck detection
-        features = self._engineer_bottleneck_features(project_data)
-        
-        # Multi-label target: different types of bottlenecks
-        bottleneck_types = [
-            'resource_bottleneck', 'technical_bottleneck', 
-            'communication_bottleneck', 'dependency_bottleneck'
-        ]
-        
-        models = {}
-        
-        for bottleneck_type in bottleneck_types:
-            if bottleneck_type in project_data.columns:
-                # Binary classification for each bottleneck type
-                y = project_data[bottleneck_type].astype(int)
-                
-                # Use Random Forest with balanced class weights
-                model = RandomForestRegressor(
-                    n_estimators=200,
-                    max_depth=15,
-                    min_samples_split=10,
-                    min_samples_leaf=5,
-                    random_state=42,
-                    n_jobs=-1
-                )
-                
-                model.fit(features, y)
-                models[bottleneck_type] = model
-                
-                # Store feature importance
-                self.feature_importance[bottleneck_type] = dict(
-                    zip(features.columns, model.feature_importances_)
-                )
-        
-        self.models['bottleneck_prediction'] = models
-    
-    def predict_bottlenecks(self, project_features: Dict) -> Dict:
-        """Predict potential bottlenecks with probability scores"""
-        
-        if self.models['bottleneck_prediction'] is None:
-            raise ValueError("Bottleneck prediction model not trained")
-        
-        feature_vector = self._prepare_bottleneck_features(project_features)
-        predictions = {}
-        
-        for bottleneck_type, model in self.models['bottleneck_prediction'].items():
-            probability = model.predict_proba(feature_vector)[0][1]
-            risk_level = self._categorize_risk_level(probability)
-            
-            predictions[bottleneck_type] = {
-                'probability': probability,
-                'risk_level': risk_level,
-                'key_factors': self._get_top_risk_factors(
-                    bottleneck_type, feature_vector
-                )
-            }
-        
-        return predictions
-    
-    def generate_optimization_recommendations(self, project_analysis: Dict) -> List[Dict]:
-        """Generate actionable optimization recommendations"""
-        
-        recommendations = []
-        
-        # Timeline optimization
-        if project_analysis.get('timeline_risk', 'low') in ['high', 'critical']:
-            recommendations.append({
-                'type': 'timeline_optimization',
-                'priority': 'high',
-                'recommendation': 'Consider parallel task execution and resource reallocation',
-                'expected_impact': 'Reduce timeline by 15-25%',
-                'implementation_effort': 'medium'
-            })
-        
-        # Resource optimization
-        bottlenecks = project_analysis.get('bottlenecks', {})
-        if bottlenecks.get('resource_bottleneck', {}).get('risk_level') == 'high':
-            recommendations.append({
-                'type': 'resource_optimization',
-                'priority': 'high',
-                'recommendation': 'Add specialized team members or redistribute workload',
-                'expected_impact': 'Improve delivery predictability by 30%',
-                'implementation_effort': 'high'
-            })
-        
-        # Process optimization
-        if bottlenecks.get('communication_bottleneck', {}).get('risk_level') == 'medium':
-            recommendations.append({
-                'type': 'process_optimization',
-                'priority': 'medium',
-                'recommendation': 'Implement daily standups and improve documentation',
-                'expected_impact': 'Reduce coordination overhead by 20%',
-                'implementation_effort': 'low'
-            })
-        
-        return recommendations
-\end{lstlisting}
+\textbf{Resource Demand Prediction:} Sophisticated algorithms forecast future resource requirements based on project complexity, team capacity, and historical workload patterns. The system predicts when additional resources may be needed and identifies optimal resource allocation strategies to maintain project momentum.
+
+\textbf{Bottleneck Detection and Prevention:} Machine learning models continuously analyze project flows to identify potential bottlenecks before they occur. The system categorizes bottlenecks into different types:
+
+\begin{itemize}
+\item \textbf{Resource Bottlenecks:} Insufficient team capacity or specialized skills
+\item \textbf{Technical Bottlenecks:} Complex technical challenges or integration issues
+\item \textbf{Communication Bottlenecks:} Coordination challenges or information gaps
+\item \textbf{Dependency Bottlenecks:} External dependencies or sequential task constraints
+\end{itemize}
+
+\textbf{Quality Forecasting:} The system predicts potential quality issues based on code complexity metrics, testing coverage, and historical defect patterns. This enables proactive quality assurance measures and helps teams allocate appropriate time for testing and refinement.
+
+\textbf{Monte Carlo Simulation:} For critical projects, the system employs Monte Carlo simulation techniques to generate probability distributions of project outcomes. This provides comprehensive risk analysis and helps stakeholders understand the range of possible project scenarios.
+
+\textbf{Optimization Recommendations:} Based on predictive analysis results, the system generates actionable recommendations for project optimization, including timeline adjustments, resource reallocation strategies, and process improvements. These recommendations are prioritized by potential impact and implementation effort to guide decision-making.
 
 \section{Continuous Learning and Model Evolution}
 
