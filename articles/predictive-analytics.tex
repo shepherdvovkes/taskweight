@@ -48,38 +48,38 @@ The TaskWeight predictive analytics system is built on a multi-layered architect
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=1.5cm,
-    every node/.style={draw, rounded corners, minimum height=1cm, text centered},
+    node distance=1.8cm,
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=2.2cm, text width=2cm, align=center},
     data/.style={fill=blue!20},
     process/.style={fill=green!20},
     model/.style={fill=orange!20},
     output/.style={fill=red!20}
 ]
 
-% Data Sources
-\node[data] (user) {User Interactions};
-\node[data, right=of user] (task) {Task Data};
-\node[data, right=of task] (project) {Project Context};
-\node[data, right=of project] (history) {Historical Data};
+% Data Sources - arranged in 2x2 grid to fit A4 width
+\node[data] (user) {User\\Interactions};
+\node[data, right=2.5cm of user] (task) {Task\\Data};
+\node[data, below=1cm of user] (project) {Project\\Context};
+\node[data, below=1cm of task] (history) {Historical\\Data};
 
 % Data Processing Layer
-\node[process, below=of task] (ingestion) {Data Ingestion Layer};
-\node[process, below=of ingestion] (feature) {Feature Engineering};
-\node[process, below=of feature] (preprocessing) {Data Preprocessing};
+\node[process, below=2cm of project] (ingestion) {Data Ingestion\\Layer};
+\node[process, below=of ingestion] (feature) {Feature\\Engineering};
+\node[process, below=of feature] (preprocessing) {Data\\Preprocessing};
 
 % ML Models
-\node[model, below left=of preprocessing] (neural) {Neural Networks};
-\node[model, below=of preprocessing] (ensemble) {Ensemble Models};
-\node[model, below right=of preprocessing] (statistical) {Statistical Models};
+\node[model, below left=1.5cm and 1cm of preprocessing] (neural) {Neural\\Networks};
+\node[model, below=1.5cm of preprocessing] (ensemble) {Ensemble\\Models};
+\node[model, below right=1.5cm and 1cm of preprocessing] (statistical) {Statistical\\Models};
 
 % Aggregation and Output
-\node[process, below=of ensemble] (aggregation) {Prediction Aggregation};
-\node[output, below=of aggregation] (prediction) {Task Estimation};
-\node[output, left=of prediction] (confidence) {Confidence Score};
-\node[output, right=of prediction] (insights) {Insights \& Recommendations};
+\node[process, below=2cm of ensemble] (aggregation) {Prediction\\Aggregation};
+\node[output, below left=1.5cm and 1cm of aggregation] (confidence) {Confidence\\Score};
+\node[output, below=1.5cm of aggregation] (prediction) {Task\\Estimation};
+\node[output, below right=1.5cm and 1cm of aggregation] (insights) {Insights \&\\Recommendations};
 
 % Feedback Loop
-\node[process, right=of aggregation] (feedback) {Feedback Loop};
+\node[process, right=2.5cm of aggregation] (feedback) {Feedback\\Loop};
 
 % Connections
 \draw[->] (user) -- (ingestion);
@@ -103,7 +103,7 @@ The TaskWeight predictive analytics system is built on a multi-layered architect
 \draw[->] (aggregation) -- (insights);
 
 \draw[->] (aggregation) -- (feedback);
-\draw[->, bend left=45] (feedback.north) to (feature.east);
+\draw[->, bend left=30] (feedback.north) to (feature.east);
 
 \end{tikzpicture}
 \caption{TaskWeight Predictive Analytics Architecture}
@@ -130,8 +130,8 @@ The core of TaskWeight's predictive system employs an ensemble learning approach
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=2cm,
-    every node/.style={draw, rounded corners, minimum height=1cm, text centered, minimum width=2.5cm},
+    node distance=1.8cm,
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=2.2cm, text width=2.2cm, align=center},
     input/.style={fill=blue!20},
     model/.style={fill=green!20},
     combiner/.style={fill=orange!20},
@@ -141,25 +141,26 @@ The core of TaskWeight's predictive system employs an ensemble learning approach
 % Input Features
 \node[input] (features) {Feature Vector\\$\mathbf{x} \in \mathbb{R}^n$};
 
-% Individual Models
-\node[model, below left=1.5cm and -1cm of features] (rf) {Random Forest\\$h_1(\mathbf{x})$};
-\node[model, below=of features] (xgb) {XGBoost\\$h_2(\mathbf{x})$};
-\node[model, below right=1.5cm and -1cm of features] (nn) {Neural Network\\$h_3(\mathbf{x})$};
-\node[model, below left=1cm and 1cm of xgb] (svm) {SVM\\$h_4(\mathbf{x})$};
-\node[model, below right=1cm and 1cm of xgb] (linear) {Linear Regression\\$h_5(\mathbf{x})$};
+% Individual Models - arranged in two rows
+\node[model, below left=1.5cm and 2cm of features] (rf) {Random Forest\\$h_1(\mathbf{x})$};
+\node[model, below left=1.5cm and 0cm of features] (xgb) {XGBoost\\$h_2(\mathbf{x})$};
+\node[model, below right=1.5cm and 0cm of features] (nn) {Neural Network\\$h_3(\mathbf{x})$};
+
+\node[model, below=1.2cm of rf] (svm) {SVM\\$h_4(\mathbf{x})$};
+\node[model, below=1.2cm of nn] (linear) {Linear Regression\\$h_5(\mathbf{x})$};
 
 % Meta-learner
-\node[combiner, below=2cm of xgb] (meta) {Meta-Learner\\$g(\mathbf{h})$};
+\node[combiner, below=2.5cm of xgb] (meta) {Meta-Learner\\$g(\mathbf{h})$};
 
 % Final Output
-\node[output, below=of meta] (output_node) {Final Prediction\\$\hat{y}$};
+\node[output, below=1.5cm of meta] (output_node) {Final Prediction\\$\hat{y}$};
 
 % Connections
 \draw[->] (features) -- (rf);
 \draw[->] (features) -- (xgb);
 \draw[->] (features) -- (nn);
-\draw[->] (features) -- (svm);
-\draw[->] (features) -- (linear);
+\draw[->] (features.south) -- (svm.north);
+\draw[->] (features.south) -- (linear.north);
 
 \draw[->] (rf) -- (meta);
 \draw[->] (xgb) -- (meta);
@@ -189,35 +190,31 @@ The deep learning component utilizes a specialized architecture designed for tim
 \centering
 \begin{tikzpicture}[
     node distance=1.5cm,
-    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered},
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.8cm, text width=1.6cm, align=center},
     input/.style={fill=blue!20},
     hidden/.style={fill=green!20},
     output/.style={fill=red!20},
     attention/.style={fill=purple!20}
 ]
 
-% Input Layer
-\node[input] (input1) {Task Features};
-\node[input, below=0.5cm of input1] (input2) {User Context};
-\node[input, below=0.5cm of input2] (input3) {Project Data};
+% Input Layer - vertical arrangement
+\node[input] (input1) {Task\\Features};
+\node[input, below=0.8cm of input1] (input2) {User\\Context};
+\node[input, below=0.8cm of input2] (input3) {Project\\Data};
 
-% Embedding Layer
-\node[hidden, right=2cm of input2] (embed) {Embedding\\Layer};
+% Processing Layers - horizontal flow
+\node[hidden, right=2.2cm of input2] (embed) {Embedding\\Layer};
+\node[hidden, right=2.2cm of embed] (lstm) {LSTM\\Layer};
+\node[attention, below=1.5cm of lstm] (attention_node) {Attention\\Mechanism};
 
-% LSTM Layer
-\node[hidden, right=1.5cm of embed] (lstm) {LSTM\\Layer};
-
-% Attention Layer
-\node[attention, right=1.5cm of lstm] (attention_node) {Attention\\Mechanism};
-
-% Dense Layers
-\node[hidden, right=1.5cm of attention_node] (dense1) {Dense\\(256)};
-\node[hidden, below=0.5cm of dense1] (dense2) {Dense\\(128)};
-\node[hidden, below=0.5cm of dense2] (dense3) {Dense\\(64)};
+% Dense Layers - vertical stack
+\node[hidden, right=2.2cm of attention_node] (dense1) {Dense\\(256)};
+\node[hidden, above=1cm of dense1] (dense2) {Dense\\(128)};
+\node[hidden, below=1cm of dense1] (dense3) {Dense\\(64)};
 
 % Output
-\node[output, right=1.5cm of dense2] (output_est) {Estimation};
-\node[output, above=0.5cm of output_est] (output_conf) {Confidence};
+\node[output, right=2.2cm of dense1] (output_est) {Task\\Estimation};
+\node[output, above=1cm of output_est] (output_conf) {Confidence\\Score};
 
 % Connections
 \draw[->] (input1) -- (embed);
@@ -228,10 +225,10 @@ The deep learning component utilizes a specialized architecture designed for tim
 \draw[->] (lstm) -- (attention_node);
 \draw[->] (attention_node) -- (dense1);
 \draw[->] (dense1) -- (dense2);
-\draw[->] (dense2) -- (dense3);
+\draw[->] (dense1) -- (dense3);
 
-\draw[->] (dense1) -- (output_conf);
-\draw[->] (dense2) -- (output_est);
+\draw[->] (dense2) -- (output_conf);
+\draw[->] (dense1) -- (output_est);
 
 \end{tikzpicture}
 \caption{Neural Network Architecture for Task Estimation}
@@ -268,42 +265,34 @@ The data processing pipeline ensures real-time capability while maintaining data
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=1.2cm,
-    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=2cm},
+    node distance=1.5cm,
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.8cm, text width=1.6cm, align=center},
     source/.style={fill=blue!20},
     process/.style={fill=green!20},
     storage/.style={fill=yellow!20},
     model/.style={fill=orange!20}
 ]
 
-% Data Sources
-\node[source] (api) {API Requests};
-\node[source, right=of api] (db) {Database};
-\node[source, right=of db] (external) {External APIs};
+% Data Sources - arranged vertically to save width
+\node[source] (api) {API\\Requests};
+\node[source, below=0.8cm of api] (db) {Database};
+\node[source, below=0.8cm of db] (external) {External\\APIs};
 
 % Stream Processing
-\node[process, below=of db] (stream) {Stream Processing\\(Apache Kafka)};
+\node[process, right=2cm of db] (stream) {Stream\\Processing};
 
 % Data Validation
-\node[process, below=of stream] (validation) {Data Validation\\\& Cleaning};
+\node[process, right=2cm of stream] (validation) {Data\\Validation};
 
-% Feature Store
-\node[storage, below left=of validation] (feature_store) {Feature Store};
+% Processing Layer
+\node[storage, below left=1.5cm and 0.5cm of validation] (feature_store) {Feature\\Store};
+\node[process, below=1.5cm of validation] (realtime) {Real-time\\Processing};
+\node[storage, below right=1.5cm and 0.5cm of validation] (results) {Prediction\\Cache};
 
-% Real-time Processing
-\node[process, below=of validation] (realtime) {Real-time\\Feature Engineering};
-
-% Model Inference
-\node[model, below=of realtime] (inference) {Model Inference\\Engine};
-
-% Results
-\node[storage, below right=of validation] (results) {Prediction\\Cache};
-
-% Batch Processing
-\node[process, left=2cm of feature_store] (batch) {Batch Processing\\(Daily Training)};
-
-% Model Store
-\node[storage, below=of batch] (model_store) {Model\\Repository};
+% Model Components
+\node[process, below=1.5cm of feature_store] (batch) {Batch\\Training};
+\node[model, below=1.5cm of realtime] (inference) {Model\\Inference};
+\node[storage, below=1.5cm of results] (model_store) {Model\\Store};
 
 % Connections
 \draw[->] (api) -- (stream);
@@ -317,7 +306,6 @@ The data processing pipeline ensures real-time capability while maintaining data
 
 \draw[->] (realtime) -- (inference);
 \draw[->] (feature_store) -- (inference);
-
 \draw[->] (inference) -- (results);
 
 \draw[->] (feature_store) -- (batch);
@@ -340,8 +328,8 @@ During the initial training phase, the system learns from historical project dat
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=2cm,
-    every node/.style={draw, rounded corners, minimum height=1cm, text centered},
+    node distance=1.8cm,
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=2cm, text width=1.8cm, align=center},
     data/.style={fill=blue!20},
     process/.style={fill=green!20},
     output/.style={fill=orange!20}
@@ -349,19 +337,19 @@ During the initial training phase, the system learns from historical project dat
 
 \node[data] (historical) {Historical\\Project Data};
 \node[process, right=of historical] (preprocessing) {Data\\Preprocessing};
-\node[process, right=of preprocessing] (training) {Model\\Training};
+\node[process, below=1.5cm of preprocessing] (training) {Model\\Training};
 \node[output, right=of training] (baseline) {Baseline\\Models};
 
-\node[data, below=of historical] (validation) {Validation\\Set};
-\node[process, below=of preprocessing] (evaluation) {Model\\Evaluation};
-\node[output, below=of training] (metrics) {Performance\\Metrics};
+\node[data, below=1.5cm of historical] (validation) {Validation\\Set};
+\node[process, below=1.5cm of training] (evaluation) {Model\\Evaluation};
+\node[output, below=1.5cm of baseline] (metrics) {Performance\\Metrics};
 
 \draw[->] (historical) -- (preprocessing);
 \draw[->] (preprocessing) -- (training);
 \draw[->] (training) -- (baseline);
 
 \draw[->] (validation) -- (evaluation);
-\draw[->] (preprocessing) -- (evaluation);
+\draw[->] (training) -- (evaluation);
 \draw[->] (evaluation) -- (metrics);
 
 \end{tikzpicture}
@@ -376,29 +364,29 @@ The system continuously updates its knowledge base as new tasks are completed an
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=1.5cm,
-    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.8cm},
+    node distance=1.8cm,
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.8cm, text width=1.6cm, align=center},
     input/.style={fill=blue!20},
     process/.style={fill=green!20},
-    decision/.style={fill=yellow!20, diamond, aspect=2},
+    decision/.style={fill=yellow!20, diamond, aspect=2, text width=1.2cm},
     update/.style={fill=red!20}
 ]
 
 \node[input] (new_task) {New Task\\Completion};
-\node[process, right=of new_task] (compare) {Compare Actual\\vs Predicted};
-\node[decision, right=of compare] (threshold) {Error >\\Threshold?};
+\node[process, below=1.5cm of new_task] (compare) {Compare\\Actual vs\\Predicted};
+\node[decision, below=1.5cm of compare] (threshold) {Error >\\Threshold?};
 
-\node[process, below=of threshold] (incremental) {Incremental\\Learning};
-\node[update, below=of incremental] (update_model) {Update Model\\Parameters};
+\node[process, below left=1.5cm and 1.5cm of threshold] (incremental) {Incremental\\Learning};
+\node[update, below=1.5cm of incremental] (update_model) {Update Model\\Parameters};
 
-\node[process, above=of threshold] (retrain) {Full Model\\Retraining};
-\node[update, above=of retrain] (deploy) {Deploy Updated\\Model};
+\node[process, below right=1.5cm and 1.5cm of threshold] (retrain) {Full Model\\Retraining};
+\node[update, below=1.5cm of retrain] (deploy) {Deploy\\Updated\\Model};
 
 % Connections
 \draw[->] (new_task) -- (compare);
 \draw[->] (compare) -- (threshold);
+\draw[->] (threshold) -- node[left] {No} (incremental);
 \draw[->] (threshold) -- node[right] {Yes} (retrain);
-\draw[->] (threshold) -- node[right] {No} (incremental);
 \draw[->] (incremental) -- (update_model);
 \draw[->] (retrain) -- (deploy);
 
@@ -415,19 +403,19 @@ The system adapts to individual user patterns and preferences:
 \centering
 \begin{tikzpicture}[
     node distance=1.8cm,
-    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered},
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.8cm, text width=1.6cm, align=center},
     user/.style={fill=purple!20},
     process/.style={fill=green!20},
     model/.style={fill=orange!20}
 ]
 
-\node[user] (user_data) {User Interaction\\Data};
-\node[process, right=of user_data] (profile) {Build User\\Profile};
-\node[model, right=of profile] (personal) {Personal\\Model};
+\node[user] (user_data) {User\\Interaction\\Data};
+\node[process, below=1.5cm of user_data] (profile) {Build User\\Profile};
+\node[model, below=1.5cm of profile] (personal) {Personal\\Model};
 
-\node[user, below=of user_data] (feedback) {User\\Feedback};
-\node[process, below=of profile] (adapt) {Adaptation\\Algorithm};
-\node[model, below=of personal] (updated) {Updated Personal\\Model};
+\node[user, right=2.5cm of user_data] (feedback) {User\\Feedback};
+\node[process, below=1.5cm of feedback] (adapt) {Adaptation\\Algorithm};
+\node[model, below=1.5cm of adapt] (updated) {Updated\\Personal\\Model};
 
 \draw[->] (user_data) -- (profile);
 \draw[->] (profile) -- (personal);
@@ -499,27 +487,28 @@ The real-time prediction system processes requests with minimal latency:
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=1.5cm,
-    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered},
+    node distance=1.8cm,
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.8cm, text width=1.6cm, align=center},
     input/.style={fill=blue!20},
     process/.style={fill=green!20},
     cache/.style={fill=yellow!20},
-    output/.style={fill=red!20}
+    output/.style={fill=red!20},
+    decision/.style={fill=yellow!20, diamond, aspect=2, text width=1.2cm}
 ]
 
 \node[input] (request) {Prediction\\Request};
-\node[cache, right=of request] (cache_check) {Cache\\Lookup};
-\node[process, below=of cache_check] (feature_ext) {Feature\\Extraction};
-\node[process, right=of feature_ext] (model_pred) {Model\\Prediction};
-\node[cache, right=of model_pred] (cache_store) {Cache\\Storage};
-\node[output, above=of cache_store] (response) {Prediction\\Response};
+\node[cache, below=1.5cm of request] (cache_check) {Cache\\Lookup};
+\node[decision, below=1.5cm of cache_check] (cache_hit) {Cache\\Hit?};
 
-% Decision diamond for cache hit/miss
-\node[diamond, aspect=2, fill=yellow!20, right=of cache_check] (cache_hit) {Cache\\Hit?};
+\node[process, below left=1.5cm and 1.5cm of cache_hit] (feature_ext) {Feature\\Extraction};
+\node[process, below=1.5cm of feature_ext] (model_pred) {Model\\Prediction};
+\node[cache, below=1.5cm of model_pred] (cache_store) {Cache\\Storage};
+
+\node[output, below right=1.5cm and 1.5cm of cache_hit] (response) {Prediction\\Response};
 
 \draw[->] (request) -- (cache_check);
 \draw[->] (cache_check) -- (cache_hit);
-\draw[->] (cache_hit) -- node[above] {Miss} (feature_ext);
+\draw[->] (cache_hit) -- node[left] {Miss} (feature_ext);
 \draw[->] (cache_hit) -- node[right] {Hit} (response);
 \draw[->] (feature_ext) -- (model_pred);
 \draw[->] (model_pred) -- (cache_store);
@@ -537,22 +526,22 @@ The system is designed for horizontal scaling to handle increasing load:
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=2cm,
-    every node/.style={draw, rounded corners, minimum height=1cm, text centered},
+    node distance=1.8cm,
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.8cm, text width=1.6cm, align=center},
     lb/.style={fill=blue!20},
     service/.style={fill=green!20},
     db/.style={fill=orange!20}
 ]
 
-\node[lb] (load_balancer) {Load Balancer};
+\node[lb] (load_balancer) {Load\\Balancer};
 
-\node[service, below left=of load_balancer] (service1) {Prediction\\Service 1};
-\node[service, below=of load_balancer] (service2) {Prediction\\Service 2};
-\node[service, below right=of load_balancer] (service3) {Prediction\\Service 3};
+\node[service, below left=1.5cm and 1cm of load_balancer] (service1) {Prediction\\Service 1};
+\node[service, below=1.5cm of load_balancer] (service2) {Prediction\\Service 2};
+\node[service, below right=1.5cm and 1cm of load_balancer] (service3) {Prediction\\Service 3};
 
-\node[db, below=of service2] (model_cache) {Model Cache\\(Redis)};
-\node[db, left=of model_cache] (feature_db) {Feature Store\\(PostgreSQL)};
-\node[db, right=of model_cache] (result_cache) {Result Cache\\(Redis)};
+\node[db, below left=2cm and 1cm of service2] (feature_db) {Feature Store\\(PostgreSQL)};
+\node[db, below=2cm of service2] (model_cache) {Model Cache\\(Redis)};
+\node[db, below right=2cm and 1cm of service2] (result_cache) {Result Cache\\(Redis)};
 
 \draw[->] (load_balancer) -- (service1);
 \draw[->] (load_balancer) -- (service2);
@@ -564,9 +553,7 @@ The system is designed for horizontal scaling to handle increasing load:
 
 \draw[<->] (service1) -- (feature_db);
 \draw[<->] (service2) -- (feature_db);
-\draw[<->] (service3) -- (feature_db);
 
-\draw[<->] (service1) -- (result_cache);
 \draw[<->] (service2) -- (result_cache);
 \draw[<->] (service3) -- (result_cache);
 
@@ -648,29 +635,30 @@ The system implements a comprehensive feedback mechanism:
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=2.5cm,
-    every node/.style={draw, rounded corners, minimum height=1cm, text centered, minimum width=2cm},
+    node distance=2cm,
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.8cm, text width=1.6cm, align=center},
     start/.style={fill=green!20, ellipse},
     process/.style={fill=blue!20},
-    decision/.style={fill=yellow!20, diamond, aspect=2},
+    decision/.style={fill=yellow!20, diamond, aspect=2, text width=1.2cm},
     end/.style={fill=red!20, ellipse}
 ]
 
 \node[start] (start) {Model\\Deployment};
-\node[process, right=of start] (collect) {Collect\\Feedback};
-\node[process, below=of collect] (analyze) {Analyze\\Performance};
-\node[decision, left=of analyze] (improve) {Need\\Improvement?};
-\node[process, left=of improve] (retrain) {Retrain\\Model};
-\node[process, above=of retrain] (validate) {Validate\\Model};
+\node[process, below=1.5cm of start] (collect) {Collect\\Feedback};
+\node[process, below=1.5cm of collect] (analyze) {Analyze\\Performance};
+\node[decision, below=1.5cm of analyze] (improve) {Need\\Improvement?};
+
+\node[process, below left=1.5cm and 1.5cm of improve] (retrain) {Retrain\\Model};
+\node[process, above=1.5cm of retrain] (validate) {Validate\\Model};
 
 % Connections
 \draw[->] (start) -- (collect);
 \draw[->] (collect) -- (analyze);
 \draw[->] (analyze) -- (improve);
-\draw[->] (improve) -- node[above] {Yes} (retrain);
+\draw[->] (improve) -- node[left] {Yes} (retrain);
 \draw[->] (retrain) -- (validate);
-\draw[->] (validate) -- (start);
-\draw[->] (improve) -- node[right] {No} (collect);
+\draw[->, bend left=60] (validate.east) to (start.west);
+\draw[->, bend right=60] (improve.east) to node[right] {No} (collect.east);
 
 \end{tikzpicture}
 \caption{Continuous Model Improvement Cycle}
@@ -697,26 +685,31 @@ A multi-level caching system optimizes response times:
 \centering
 \begin{tikzpicture}[
     node distance=1.5cm,
-    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered},
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.8cm, text width=1.6cm, align=center},
     cache/.style={fill=yellow!20},
     process/.style={fill=green!20}
 ]
 
 \node[cache] (l1) {L1 Cache\\(In-Memory)};
-\node[cache, below=of l1] (l2) {L2 Cache\\(Redis)};
-\node[cache, below=of l2] (l3) {L3 Cache\\(Database)};
-\node[process, right=2cm of l2] (prediction) {Model\\Prediction};
+\node[cache, below=1.2cm of l1] (l2) {L2 Cache\\(Redis)};
+\node[cache, below=1.2cm of l2] (l3) {L3 Cache\\(Database)};
+\node[process, right=3cm of l2] (prediction) {Model\\Prediction};
 
 % Cache hierarchy
-\draw[<->] (l1) -- node[right] {Miss} (l2);
-\draw[<->] (l2) -- node[right] {Miss} (l3);
+\draw[<->] (l1) -- node[left] {Miss} (l2);
+\draw[<->] (l2) -- node[left] {Miss} (l3);
 \draw[->] (l3) -- node[above] {Miss} (prediction);
 
-% Hit paths
-\draw[->] (l1) -- ++(2,0) node[right] {Hit: <1ms};
-\draw[->] (l2) -- ++(2,0) node[right] {Hit: <5ms};
-\draw[->] (l3) -- ++(2,0) node[right] {Hit: <20ms};
-\draw[->] (prediction) -- ++(0,-1) node[below] {Fresh: <100ms};
+% Hit paths with performance labels
+\node[right=2.5cm of l1] (hit1) {Hit: <1ms};
+\node[right=2.5cm of l2] (hit2) {Hit: <5ms};
+\node[right=2.5cm of l3] (hit3) {Hit: <20ms};
+\node[below=1cm of prediction] (fresh) {Fresh: <100ms};
+
+\draw[->] (l1) -- (hit1);
+\draw[->] (l2) -- (hit2);
+\draw[->] (l3) -- (hit3);
+\draw[->] (prediction) -- (fresh);
 
 \end{tikzpicture}
 \caption{Multi-Level Caching Strategy}
@@ -741,19 +734,19 @@ The predictive analytics system implements comprehensive security measures:
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=2cm,
-    every node/.style={draw, rounded corners, minimum height=1cm, text centered},
+    node distance=1.8cm,
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.8cm, text width=1.6cm, align=center},
     input/.style={fill=blue!20},
     security/.style={fill=red!20},
     process/.style={fill=green!20}
 ]
 
-\node[input] (data_input) {Input Data};
-\node[security, right=of data_input] (validation) {Input\\Validation};
-\node[security, right=of validation] (sanitization) {Data\\Sanitization};
-\node[process, below=of sanitization] (model) {ML Model};
-\node[security, left=of model] (output_filter) {Output\\Filtering};
-\node[input, left=of output_filter] (response) {Response};
+\node[input] (data_input) {Input\\Data};
+\node[security, below=1.5cm of data_input] (validation) {Input\\Validation};
+\node[security, below=1.5cm of validation] (sanitization) {Data\\Sanitization};
+\node[process, below=1.5cm of sanitization] (model) {ML Model};
+\node[security, below=1.5cm of model] (output_filter) {Output\\Filtering};
+\node[input, below=1.5cm of output_filter] (response) {Response};
 
 \draw[->] (data_input) -- (validation);
 \draw[->] (validation) -- (sanitization);
@@ -784,32 +777,32 @@ Future versions will incorporate:
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance=2cm,
-    every node/.style={draw, rounded corners, minimum height=1cm, text centered},
+    node distance=1.5cm,
+    every node/.style={draw, rounded corners, minimum height=0.8cm, text centered, minimum width=1.6cm, text width=1.4cm, align=center},
     current/.style={fill=green!20},
     planned/.style={fill=blue!20},
     future/.style={fill=orange!20}
 ]
 
-% Timeline
-\draw[thick] (0,0) -- (12,0);
-\foreach \x/\label in {0/Q1, 3/Q2, 6/Q3, 9/Q4, 12/Q5} {
+% Simplified timeline
+\draw[thick] (0,0) -- (10,0);
+\foreach \x/\label in {0/Q1, 2.5/Q2, 5/Q3, 7.5/Q4, 10/Q5} {
     \draw (\x,0.1) -- (\x,-0.1);
     \node[below] at (\x,-0.3) {\label};
 }
 
 % Current features
-\node[current, above=0.5cm of 1.5cm] (ensemble) {Ensemble\\Models};
+\node[current] at (1.25,1.5) (ensemble) {Ensemble\\Models};
 
 % Planned features
-\node[planned, above=1.5cm of 4.5cm] (rl) {Reinforcement\\Learning};
-\node[planned, above=0.5cm of 4.5cm] (transfer) {Transfer\\Learning};
+\node[planned] at (3.75,2) (rl) {Reinforcement\\Learning};
+\node[planned] at (3.75,0.8) (transfer) {Transfer\\Learning};
 
 % Future features
-\node[future, above=1.5cm of 7.5cm] (federated) {Federated\\Learning};
-\node[future, above=0.5cm of 7.5cm] (meta) {Meta\\Learning};
+\node[future] at (6.25,2) (federated) {Federated\\Learning};
+\node[future] at (6.25,0.8) (meta) {Meta\\Learning};
 
-\node[future, above=1.5cm of 10.5cm] (quantum) {Quantum ML\\Integration};
+\node[future] at (8.75,1.5) (quantum) {Quantum ML\\Integration};
 
 \end{tikzpicture}
 \caption{Machine Learning Enhancement Roadmap}
